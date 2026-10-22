@@ -4,16 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Detect the Disappearing Data</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap">
 <style>
 /* Layout: C4R activity shell. White page, a slim header with a step bar, one centered column of cards, prev/next footer. */
 :root{
-  --bg:#ffffff; --fg:#1f2937; --muted:#6b7280; --border:#e5e7eb; --panel:#f8fafc;
-  --accent:#6E00FF; --accent-dark:#5700CA; --accent-fill:rgba(110,0,255,0.08);
+  --bg:#ffffff; --fg:#202020; --muted:#757575; --border:#E0E0E0; --panel:#F3F3F3;
+  --accent:#6F00FF; --accent-dark:#5700CA; --accent-fill:#F3EBFF;
   --orange:#FF5A00; --green:#00C802;
-  --success:#4CAF50; --warning:#f39c12; --error:#e74c3c; --info:#3498db;
-  --control:#6b7280; --treat:#6E00FF;
+  --success:#007800; --success-fill:#e0efe0; --warning:#EA7134; --warning-fill:#fceee7; --error:#d00000; --error-fill:#f9e0e0; --info:#1859D7;
+  --control:#757575; --treat:#6F00FF;
   --unit:#0082FF; --unit-fill:#e0f0ff; --takeaway:#1859D7; --takeaway-fill:#e3ebfa; --drop:#FF5A00;
-  --font:"General Sans","GeneralSans-Regular",Arial,Helvetica,sans-serif;
+  --font:'Poppins',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   --mono:"JetBrains Mono",Menlo,Monaco,monospace;
   color-scheme:light;
 }
@@ -22,17 +23,17 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 6rem}
 .wrap{max-width:880px;margin:0 auto}
 header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.5rem 1rem;padding-block:1.25rem .75rem;border-bottom:1px solid var(--border)}
-header h1{font-size:1.5rem;margin:0;font-weight:600}
+header h1{font-size:1.5rem;margin:0;font-weight:800}
 header .lesson{font-size:0.875rem;color:var(--muted)}
 .steps{display:flex;gap:.375rem;flex-wrap:wrap;padding-block:.75rem 0;font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .steps span{padding:.25rem .5rem;border-radius:4px;border:1px solid var(--border)}
 .steps span.on{background:var(--accent);color:#fff;border-color:var(--accent)}
 .steps span.done{border-color:var(--accent);color:var(--accent)}
 main{padding-block:1.5rem}
-h2{font-size:1.5rem;margin:0 0 .5rem;font-weight:600;text-wrap:balance}
-h3{font-size:1.125rem;margin:0 0 .5rem;font-weight:600}
+h2{font-size:1.375rem;margin:0 0 .5rem;font-weight:700;text-wrap:balance}
+h3{font-size:1.25rem;margin:0 0 .5rem;font-weight:700}
 p{margin:0 0 .75rem}
-.lede{font-size:1.125rem;color:var(--fg)}
+.lede{font-size:1.2rem;color:var(--fg)}
 .muted{color:var(--muted)}
 .small{font-size:0.875rem}
 .stack{display:flex;flex-direction:column;gap:1rem}
@@ -44,7 +45,7 @@ p{margin:0 0 .75rem}
 .hint-card{position:relative;background:#fff3e0;border-left:4px solid #FFA800;border-radius:4px;padding:1rem 2.5rem 1rem 1rem}
 .hint-card .head{display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem;font-weight:500}
 .hint-card p{margin:0}
-.hint-close{position:absolute;top:8px;right:8px;width:28px;height:28px;border:0;background:none;cursor:pointer;color:#6b7280;display:flex;align-items:center;justify-content:center;border-radius:50%;padding:0}
+.hint-close{position:absolute;top:8px;right:8px;width:28px;height:28px;border:0;background:none;cursor:pointer;color:#757575;display:flex;align-items:center;justify-content:center;border-radius:50%;padding:0}
 .hint-close:hover{color:var(--fg);background:rgba(0,0,0,.05)}
 .hint-close svg{width:18px;height:18px}
 .zoomable{cursor:zoom-in;border-radius:8px}
@@ -69,12 +70,17 @@ p{margin:0 0 .75rem}
 .resp.you{border-color:var(--accent);background:rgba(110,0,255,.04);box-shadow:none}
 .resp.you .band{background:var(--accent)}
 .resp .body{flex:1;min-width:0;padding:1rem;white-space:pre-wrap;font-size:0.875rem;line-height:1.5}
+.th-help{display:inline-flex;align-items:center;gap:.4rem;position:relative;text-transform:none;letter-spacing:0}
+.th-help::before{content:"Your call";text-transform:uppercase;letter-spacing:.04em}
+.help-icon{display:inline-flex;border:0;font-weight:400;cursor:help;color:inherit;vertical-align:middle;text-decoration:none}
+.help-icon svg{width:16px;height:16px}
+.help-icon:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:50%}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.card{border:1px solid var(--border);border-radius:6px;padding:1rem;background:var(--bg)}
+.card{border:1px solid rgba(0,0,0,.15);border-radius:12px;padding:1rem;background:var(--bg)}
 .panel{background:var(--panel);border-radius:6px;padding:1rem}
-.btn{font:inherit;font-size:1rem;font-weight:600;padding:.6rem 1.1rem;border-radius:6px;border:2px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
-.btn:hover{background:var(--accent-dark);border-color:var(--accent-dark)}
-.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn{font:inherit;font-size:1rem;font-weight:400;padding:10px 20px;border-radius:8px;border:0;background:var(--accent);color:#fff;cursor:pointer;line-height:1.5}
+.btn:hover{background:var(--accent-dark)}
+.btn:disabled{background:#C4C4C4;color:#fff;cursor:not-allowed}
 .btn.ghost{background:#fff;color:var(--accent)}
 .btn.ghost:hover{background:var(--accent-fill)}
 .btn:focus-visible,.choice:focus-visible,.opt:focus-visible,.term:focus-visible,.tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -96,27 +102,37 @@ p{margin:0 0 .75rem}
 .choice ul{font-size:0.875rem;margin:.5rem 0 0;padding-left:1.1rem;color:var(--fg)}
 /* Option rows (forced choice) */
 .opts{display:flex;flex-direction:column;gap:.5rem}
-.opt{display:flex;gap:.75rem;align-items:flex-start;text-align:left;font:inherit;color:var(--fg);background:#fff;border:2px solid var(--border);border-radius:6px;padding:.7rem .9rem;cursor:pointer}
+.opt.check .box{flex:none;width:18px;height:18px;border:2px solid #7F7F7F;border-radius:3px;margin-top:2px;position:relative;background:#fff;color:var(--accent)}
+.opt.check.correct .box{color:var(--success)}.opt.check.wrong .box{color:var(--error)}
+.opt.check[aria-checked="true"] .box{border-color:currentColor;background:currentColor}
+.opt.check[aria-checked="true"] .box::after{content:"";position:absolute;left:4px;top:0px;width:6px;height:11px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.opt.check[disabled]{cursor:default;opacity:1}
+.opt-why{display:block;font-size:0.875rem;color:var(--muted);margin-top:.25rem;font-weight:400}
+.opt.correct .opt-why{color:var(--success)}.opt.wrong .opt-why{color:var(--error)}
+.opt{display:flex;gap:.75rem;align-items:flex-start;text-align:left;font:inherit;color:var(--fg);background:#fff;border:2px solid #7F7F7F;border-radius:9px;padding:.7rem .9rem;cursor:pointer}
 .opt:hover{border-color:var(--accent)}
 .opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-fill)}
 .opt .dot{flex:none;width:18px;height:18px;margin-top:.15rem;border-radius:50%;border:2px solid #767676;position:relative}
 .opt[aria-pressed="true"] .dot{border-color:var(--accent)}
 .opt[aria-pressed="true"] .dot::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--accent)}
 .opt:disabled{cursor:default}
-.opt.correct{border-color:var(--success);background:rgba(76,175,80,.08)}
-.opt.wrong{border-color:var(--error);background:rgba(231,76,60,.06)}
+.opt.correct{border-color:var(--success);background:var(--success-fill)}
+.opt.wrong{border-color:var(--error);background:var(--error-fill)}
 .instr{position:relative;overflow:hidden;background:#eee0ff;border:1px solid rgba(0,0,0,.15);border-radius:12px;box-shadow:0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px 0 rgba(0,0,0,.14),0 1px 5px 0 rgba(0,0,0,.12)}
 .instr::before{content:"";position:absolute;left:0;top:0;bottom:0;width:24px;background:var(--accent)}
 .instr .inner{position:relative;background:#eee0ff;margin-left:6px;border-top-left-radius:12px;border-bottom-left-radius:12px;padding:16px 16px 16px 10px;display:flow-root}
-.instr h2{font-size:1.5rem;margin:0 0 .5rem}
+.instr h2{font-size:1.375rem;margin:0 0 .5rem}
 .instr p:last-child{margin-bottom:0}
-.feedback{border-left:4px solid var(--info);background:var(--panel);padding:.75rem 1rem;border-radius:0 6px 6px 0}
-.feedback.good{border-left-color:var(--success)}
-.feedback.bad{border-left-color:var(--warning)}
+.feedback{border-left:4px solid var(--info);background:var(--takeaway-fill);padding:.75rem 1rem;border-radius:0 8px 8px 0}
+.feedback.good{border-left-color:var(--success);background:var(--success-fill)}
+.feedback.bad{border-left-color:var(--warning);background:var(--warning-fill)}
 .feedback p:last-child{margin:0}
 /* Charts */
 .charts{display:grid;grid-template-columns:1fr;gap:1rem}
-.charts.pair{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.charts.pair{grid-template-columns:repeat(auto-fit,minmax(340px,1fr));align-items:stretch}
+.charts.pair .zoomable{display:flex}
+.charts.pair .chart.card{flex:1;display:flex;flex-direction:column}
+.charts.pair .chart.card .legend{margin-top:auto}
 details.prior{margin-top:1rem;border:1px solid #E0E0E0;border-radius:12px;background:#fff;overflow:hidden}
 details.prior summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.5rem .5625rem .5rem 1rem;font-weight:700;font-size:1.167rem;line-height:1.3;color:var(--fg);user-select:none;transition:background-color .2s}
 details.prior summary::-webkit-details-marker{display:none}
@@ -130,9 +146,19 @@ details.prior .content{padding:1rem}
 details.prior .content .study{margin-bottom:0}
 .scenario{border-top:1px solid var(--border);padding-top:1rem;margin-top:1rem}
 .chart{min-width:0}
-.chart h4{font-size:0.875rem;margin:0 0 .25rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.chart h4{font-size:1.125rem;margin:0 0 .25rem;font-weight:700;color:var(--fg)}
 .chart svg{width:100%;height:auto;display:block}
-.chart{padding-bottom:0}
+.chart{padding-bottom:1rem}
+.chart-row{display:flex;gap:1rem;align-items:center}
+.chart-row .plot{flex:1 1 0;min-width:0}
+.stat-tbl{flex:0 0 auto;width:auto;border-collapse:collapse;font-size:0.8rem;font-variant-numeric:tabular-nums}
+.stat-tbl th,.stat-tbl td{padding:.3rem .5rem;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap}
+.stat-tbl th{font-size:0.7rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.stat-tbl td i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:.4rem;vertical-align:middle}
+.stat-tbl tr.diff td{background:#eee0ff;color:var(--accent-dark);font-weight:600;border-bottom:0}
+.stat-tbl tr.diff td:first-child{border-radius:6px 0 0 6px}.stat-tbl tr.diff td:last-child{border-radius:0 6px 6px 0}
+.chart-row.stacked{flex-direction:column;align-items:stretch}.chart-row.stacked .stat-tbl{width:100%}
+@media(max-width:640px){.chart-row{flex-direction:column;align-items:stretch}.stat-tbl{width:100%}}
 .diff-banner{background:#eee0ff;color:var(--accent-dark);font-weight:600;padding:.5rem 1rem;margin:.5rem -1rem 0;border-radius:0 0 6px 6px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:.25rem 1rem;font-variant-numeric:tabular-nums}
 .diff-banner .n{font-weight:400;font-size:0.875rem;color:var(--fg)}
 .study{display:grid;grid-template-columns:auto 1fr;gap:.35rem 1rem;margin-bottom:1rem}
@@ -140,8 +166,8 @@ details.prior .content .study{margin-bottom:0}
 .study dd{margin:0}
 tr.needs-change td{background:rgba(243,156,18,.14)}
 tr.needs-change td:first-child{box-shadow:inset 4px 0 0 var(--warning)}
-.takeaway{background:var(--takeaway-fill);border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.12);overflow:hidden;margin-bottom:1rem}
-.takeaway h3{margin:0;background:var(--takeaway);color:#fff;padding:.75rem 1rem;font-size:1.125rem}
+.takeaway{background:var(--takeaway-fill);border-radius:12px;border:1px solid rgba(0,0,0,.15);box-shadow:0 2px 6px rgba(0,0,0,.12);overflow:hidden;margin-bottom:1rem}
+.takeaway h3{margin:0;background:var(--takeaway);color:#fff;padding:.75rem 1rem;font-size:1.25rem}
 .takeaway .body{padding:1rem;display:flow-root}
 .takeaway ul{margin:0;padding-left:1.2rem}
 .takeaway li{margin-bottom:.5rem}
@@ -163,13 +189,14 @@ tr.needs-change td:first-child{box-shadow:inset 4px 0 0 var(--warning)}
 .tk-card.lesson{padding-left:1rem;border-left:6px solid var(--drop)}
 .tk-card.lesson p{font-size:1rem}
 .stat{font-family:var(--mono);font-size:0.875rem;color:var(--fg);font-variant-numeric:tabular-nums}
-.legend{display:flex;flex-wrap:wrap;gap:1rem;font-size:0.75rem;color:var(--muted);margin-top:.25rem}
+.legend{display:flex;flex-wrap:wrap;gap:.5rem 1rem;font-size:0.75rem;color:var(--muted);margin-top:.75rem;padding-top:.6rem;border-top:1px solid var(--border)}
 .legend span{display:inline-flex;align-items:center;gap:.35rem}
 .legend i{width:12px;height:12px;border-radius:50%;display:inline-block}
 .delta{font-size:1.25rem;font-weight:600;font-variant-numeric:tabular-nums}
 /* Exclusion log table */
 table{border-collapse:collapse;width:100%;font-size:0.875rem}
-th,td{text-align:left;padding:.45rem .5rem;border-bottom:1px solid var(--border);vertical-align:middle}
+th,td{text-align:center;padding:.45rem .5rem;border-bottom:1px solid var(--border);vertical-align:middle}
+td.txt{text-align:left}
 th{font-size:0.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
 .tbl{overflow:visible}
 .tbl td{white-space:normal}
@@ -183,9 +210,12 @@ th{font-size:0.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--m
 .pill.treatment{color:var(--accent);border-color:var(--accent)}
 .pill.control{color:var(--control);border-color:var(--control)}
 /* Hover definitions */
-.term{border-bottom:1px dotted var(--accent);color:var(--accent);cursor:help;position:relative;font-weight:600}
-#tip{position:fixed;z-index:1000;width:min(300px,80vw);background:var(--fg);color:#fff;font-weight:400;font-size:0.875rem;line-height:1.4;padding:.5rem .7rem;border-radius:6px;pointer-events:none;opacity:0;transition:opacity .15s}
+.term{text-decoration:underline dotted;text-decoration-color:var(--accent);text-underline-offset:2px;cursor:help;color:inherit;font-weight:inherit}
+#tip{position:fixed;z-index:1000;width:max-content;max-width:min(300px,calc(100vw - 32px));background:#202020;color:#fff;font-weight:400;font-size:0.875rem;line-height:1.43;padding:8px 12px;border-radius:8px;pointer-events:none;opacity:0;transition:opacity .15s;white-space:pre-line;filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff) drop-shadow(0 4px 12px rgba(32,32,32,.3))}
 #tip.show{opacity:1}
+#tip::after{content:"";position:absolute;left:var(--ax,50%);transform:translateX(-50%);border-left:9px solid transparent;border-right:9px solid transparent}
+#tip.above::after{top:100%;border-top:13px solid #202020}
+#tip.below::after{bottom:100%;border-bottom:13px solid #202020}
 /* Round tabs (human path) */
 .tabs{display:flex;gap:.375rem;flex-wrap:wrap;margin-bottom:1rem}
 .tab{font:inherit;font-size:0.875rem;font-weight:600;padding:.4rem .8rem;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--muted)}
@@ -198,11 +228,11 @@ footer .hint{font-size:0.875rem;color:var(--muted)}
 .proto{font-size:0.75rem;color:var(--muted);border:1px dashed var(--border);border-radius:4px;padding:.25rem .5rem}
 ul.tight{margin:.25rem 0 .75rem;padding-left:1.2rem}
 ul.tight li{margin-bottom:.35rem}
-.intro-accent{border-radius:8px;background:var(--unit-fill);box-shadow:0 2px 6px rgba(0,0,0,.12);overflow:hidden;margin-bottom:1rem}
-.intro-accent h2{margin:0;color:#fff;background:var(--unit);padding:.75rem 1rem;border-radius:0 0 8px 8px;font-size:1.5rem}
+.intro-accent{border-radius:12px;border:1px solid rgba(0,0,0,.15);background:var(--unit-fill);box-shadow:0 2px 6px rgba(0,0,0,.12);overflow:hidden;margin-bottom:1rem}
+.intro-accent h2{margin:0;color:#fff;background:var(--unit);padding:.75rem 1rem;border-radius:0 0 8px 8px;font-size:1.375rem}
 .intro-accent .body{padding:.75rem 1rem}
-.intro-panel{border-radius:8px;background:#fff;padding:.75rem 1rem;margin-bottom:1rem}
-.intro-panel h2{font-size:1.5rem;margin:0 0 .75rem}
+.intro-panel{border-radius:12px;border:1px solid rgba(0,0,0,.15);background:#fff;padding:12px 16px;margin-bottom:1rem}
+.intro-panel h2{font-size:1.375rem;margin:0 0 .75rem}
 .numbered{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1rem}
 .numbered li{display:flex;gap:.75rem;align-items:flex-start}
 .numbered .badge{flex:none;width:30px;height:30px;border-radius:50%;background:var(--fg);color:#fff;font-size:0.875rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:-3px}
@@ -272,17 +302,17 @@ const DATA={
     const c=s.filter(d=>d.arm==='control'),t=s.filter(d=>d.arm==='treatment');
     pickRandom(r,c,3).forEach(d=>{d.dropped=true;d.reason='Missed visits';d.kind='benign'});
     t.forEach(d=>{if(r()<(d.age>=60?0.8:0.06)){d.dropped=true;d.reason='Missed visits';d.kind='suspect'}})}),
-  mnar:build(73,30,r=>{const age=Math.round(35+r()*40),sev=r();return{age,sev,x:clamp(normal(r,40,9),2,98)}},r=>{const age=Math.round(35+r()*40),sev=r();return{age,sev,x:clamp(48-0.45*(age-55)-22*(sev-0.5)+normal(r,0,7),2,98)}},(r,s)=>{
+  mnar:build(107,20,r=>{const age=Math.round(35+r()*40),sev=r();return{age,sev,x:clamp(normal(r,40,9),2,98)}},r=>{const age=Math.round(35+r()*40),sev=r();return{age,sev,x:clamp(48-0.45*(age-55)-24*(sev-0.5)+normal(r,0,7),2,98)}},(r,s)=>{
     const c=s.filter(d=>d.arm==='control'),t=s.filter(d=>d.arm==='treatment');
-    const MC=['Moved out of the area','Changed phone number; could not be reached','Withdrew to care for a family member','Relocated for a new job'];
+    const MC=['Moved out of the area','Changed phone number; could not be reached'];
     const MAR='Could not manage the monthly visits; travel too difficult';
     const MN=['Stopped attending. At a follow-up call, mentioned side effects. Side effects were not recorded in this trial.','Stopped attending. No reason given.'];
     let mc=0,mn=0;
-    pickRandom(r,c,2).forEach(d=>{d.dropped=true;d.kind='MCAR';d.reason=MC[mc++%MC.length]});
+    pickRandom(r,c,1).forEach(d=>{d.dropped=true;d.kind='MCAR';d.reason=MC[mc++%MC.length]});
     c.filter(d=>!d.dropped).sort((a,b)=>b.age-a.age).slice(0,1).forEach(d=>{d.dropped=true;d.kind='MAR';d.reason=MAR});
-    pickRandom(r,t,2).forEach(d=>{d.dropped=true;d.kind='MCAR';d.reason=MC[mc++%MC.length]});
-    t.filter(d=>!d.dropped).sort((a,b)=>b.age-a.age).slice(0,4).forEach(d=>{d.dropped=true;d.kind='MAR';d.reason=MAR});
-    t.filter(d=>!d.dropped).sort((a,b)=>b.sev-a.sev).slice(0,7).forEach(d=>{d.dropped=true;d.kind='MNAR';d.reason=MN[mn++%MN.length]})}),
+    pickRandom(r,t,1).forEach(d=>{d.dropped=true;d.kind='MCAR';d.reason=MC[mc++%MC.length]});
+    t.filter(d=>!d.dropped).sort((a,b)=>b.age-a.age).slice(0,3).forEach(d=>{d.dropped=true;d.kind='MAR';d.reason=MAR});
+    t.filter(d=>!d.dropped).sort((a,b)=>b.sev-a.sev).slice(0,4).forEach(d=>{d.dropped=true;d.kind='MNAR';d.reason=MN[mn++%MN.length]})}),
 };
 
 const TIP={
@@ -334,11 +364,11 @@ const PATHS={
       why:'Planning for attrition keeps the study powered when animals are lost. Treating every animal the same, in housing, handling, monitoring, and the criteria for exclusion, keeps the loss from tracking the treatment. Matching counts or giving one group extra care creates a new difference between groups.'},
     lessons:['Deaths, humane endpoints, and health exclusions are not neutral when they happen more in one group.','A side effect that removes the sickest animals looks, among survivors, like a treatment that works.','Once a loss could be related to treatment, ask whether you recorded anything that explains it. A humane endpoint tied to a measured side effect, like weight loss, can be accounted for in the analysis. A death with nothing in the record cannot, so report how much it could change the result.'],
     prevent:[{t:'Account for attrition in the sample size',d:'Build the loss you expect into the calculation so attrition does not leave the study underpowered.'},{t:'Treat all animals the same',d:'The same housing, handling, monitoring, and exclusion criteria for every group.'}]},
-  humans:{eyebrow:'Clinical',title:'Humans',sub:'A 12-week trial of a new drug for chronic pain',facts:['30 participants per arm','Outcome: pain relief at 12 weeks','Loss: moved, missed visits, stopped attending'],
-    summary:'Does the drug relieve chronic pain better than placebo? 30 participants per group, pain relief reported at week 12.',
+  humans:{eyebrow:'Clinical',title:'Humans',sub:'A 12-week trial of a new drug for chronic pain',facts:['20 participants per group','Outcome: pain relief at 12 weeks','Loss: moved, missed visits, stopped attending'],
+    summary:'Does the drug relieve chronic pain better than placebo? 20 participants per group, pain relief reported at week 12.',
     unit:'participants',subject:'participant',arms:['Placebo','Drug'],outcome:'Pain relief at 12 weeks (0 to 100)',
-    goal:'Test whether a new drug relieves chronic pain better than placebo over 12 weeks.',method:'Thirty participants get placebo and thirty get the drug. At week 12 everyone still enrolled reports their pain relief.',
-    attrition:'Over 12 weeks, sixteen participants leave: three from the placebo group and thirteen from the drug group. Each one has a short note in the trial file, and the notes differ.',
+    goal:'Test whether a new drug relieves chronic pain better than placebo over 12 weeks.',method:'Twenty participants get placebo and twenty get the drug. At week 12 everyone still enrolled reports their pain relief.',
+    attrition:'Over 12 weeks, ten participants leave: two from the placebo group and eight from the drug group. Each one has a short note in the trial file, and the notes differ.',
     twist:'The drug participants who left were the ones with the worst side effects, and side effects were never recorded. The drug participants who finished are the ones who tolerated it.',
     conclude:{q:'A reader sees only the week 12 result among participants who finished. What are they most likely to conclude?',opts:['The drug is only marginally better than placebo','The drug relieves pain far better than placebo','The drug causes side effects that push people out of the trial'],ans:1,
       why:'The survivor-only result shows a large gap. The true gap is modest, and the side effects that drove dropout were never measured, so nothing in the dataset points to them.'},
@@ -381,63 +411,78 @@ const DQ={
       q1:(b,a)=>({q:'Compared with the no-attrition figure, the difference between means you see now is:',opts:['Smaller','Larger','About the same'],ans:a.diff-b.diff>2?1:a.diff-b.diff<-2?0:2,
         why:`The difference went from ${b.diff.toFixed(1)} to ${a.diff.toFixed(1)}. Same trial, same participants, different answer, because of who is missing.`}),
       q2:{q:'Look at the hollow orange dots. Who left the trial?',opts:['A random mix of people from both groups','Mostly placebo participants with high relief','Mostly drug participants with low relief'],ans:2,
-        why:'Thirteen of the sixteen who left were in the drug group, and they reported the least relief. Removing them raises the drug mean and inflates the difference.'}}},
+        why:'Eight of the ten who left were in the drug group, and they reported the least relief. Removing them raises the drug mean and inflates the difference.'}}},
 };
-const OPEN={
-  cells:{q1:'A reader sees only the result after the QC exclusions. What would they conclude about Compound X, and how does that differ from what the full data show?',
-    a1:'[Placeholder] A reader of the post-QC figure would conclude that Compound X has little or no effect: the gap between means is small and sits well inside the spread of either condition. The full data show a clear effect concentrated in a cluster of strong responders. Those responders are exactly the wells the imaging QC removed, so the exclusion rule hid the result it was meant to protect.',
-    q2:'How would you redesign this experiment to protect the result from attrition bias?',
-    a2:'[Placeholder] Treat every sample the same: identical handling, plating, imaging schedule, and pre-specified QC rules for every condition. Plan extra replicate wells to absorb the loss you expect, decide the QC criteria before seeing any results, and record which wells fail and why so an uneven pattern of loss between conditions is visible in the write-up.'},
-  mice:{q1:'A reader sees only the day 28 result among surviving animals. What would they conclude about the drug, and how does that differ from what the full data show?',
-    a1:'[Placeholder] A reader of the survivor-only figure would conclude that the drug substantially improves motor recovery. The full data show a small difference that sits inside the spread of either group. The drug animals that died or reached a humane endpoint were the ones recovering worst, so losing them pulled the drug mean up and the side effect that removed them never appears in the final figure.',
-    q2:'How would you redesign this study to protect the result from attrition bias?',
-    a2:'[Placeholder] Account for the attrition you expect in the sample size calculation so losses do not leave the study underpowered, and treat all animals the same: the same housing, handling, monitoring, and exclusion criteria for every group. Report every loss with its reason by group, so a reader can see that the drug group lost more animals and ask why.'},
-  humans:{q1:'A reader sees only the week 12 result among participants who finished. What would they conclude about the drug, and how does that differ from what the full data show?',
-    a1:'[Placeholder] A reader of the completers-only figure would conclude that the drug relieves pain far better than placebo. The full data show a modest difference with heavy overlap between groups. The drug participants who left were the ones with the least relief and the worst side effects, and because side effects were never recorded, nothing in the dataset points to the reason they left.',
-    q2:'How would you redesign this trial to protect the result from attrition bias?',
-    a2:'[Placeholder] Minimize the burden of long-term participation so staying in the trial is easy, recruit more participants than the sample size calculation calls for based on the attrition seen in similar trials, and apply what other studies in this population have learned about retention. Record the reason every participant leaves, so dropout that depends on something you measured can be adjusted for and dropout you cannot explain can be tested with a sensitivity analysis.'},
+const MULTI={
+  cells:{q:'Which of these would protect this experiment from attrition bias? Select all that apply.',
+    opts:[{t:'Treat every sample the same: identical handling, plating, imaging schedule, and pre-specified QC rules for every condition',ok:true,why:'Identical handling and QC rules keep the loss from tracking the treatment.'},
+      {t:'Plan extra replicate wells or plates to absorb the loss you expect',ok:true,why:'Planned replicates mean the loss you still get does not leave you short.'},
+      {t:'Decide the QC criteria before seeing any results, and record every exclusion with its reason',ok:true,why:'Pre-specified criteria cannot bend toward the result, and a logged reason makes uneven loss visible.'},
+      {t:'Lower the QC threshold so fewer wells are excluded',ok:false,why:'Fewer exclusions does not make the remaining ones even. The loss still tracks the treatment, and you now keep bad images too.'},
+      {t:'Image only the healthiest-looking wells',ok:false,why:'Hand-picking wells is selection on the outcome. It builds the bias in deliberately.'},
+      {t:'Run the treated wells on a separate day with extra care',ok:false,why:'Handling one condition differently adds a new difference between conditions.'}],
+    why:'Loss is only harmless when it falls evenly. Identical handling, planned replicates, and pre-specified QC keep the loss from tracking the treatment and keep you from running short when it happens.'},
+  mice:{q:'Which of these would protect this study from attrition bias? Select all that apply.',
+    opts:[{t:'Account for expected attrition in the sample size calculation',ok:true,why:'Planning for the loss keeps the study powered when animals are lost.'},
+      {t:'Treat every animal the same: housing, handling, monitoring, and exclusion criteria',ok:true,why:'The same rules for every group keep the loss from tracking the treatment.'},
+      {t:'Exclude the same number of animals from each group',ok:false,why:'Matching counts removes healthy animals from one group to balance sick ones lost from the other. The groups are still not comparable.'},
+      {t:'Score animals earlier, before any have died',ok:false,why:'Changing the endpoint to dodge the loss answers a different question than the one the study was designed for.'},
+      {t:'Give the drug group extra veterinary care so fewer are lost',ok:false,why:'Extra care for one group adds a new difference between groups.'}],
+    why:'Planning for attrition keeps the study powered when animals are lost, and treating every animal the same keeps the loss from tracking the treatment.'},
+  humans:{q:'Which of these would protect this trial from attrition bias? Select all that apply.',
+    opts:[{t:'Minimize the burden of long-term participation',ok:true,why:'Fewer people leave when staying is easy.'},
+      {t:'Recruit more participants than you need, based on attrition in similar studies',ok:true,why:'Planning for the attrition seen in similar trials keeps the study powered when some still leave.'},
+      {t:'Apply retention lessons learned from other studies in this population',ok:true,why:'Knowing what has kept people enrolled before lets you build it in from the start.'},
+      {t:'Analyze only participants who completed all 12 weeks',ok:false,why:'That is the bias itself. The completers are the sample attrition left you.'},
+      {t:'Replace each dropout with a new participant partway through',ok:false,why:'A replacement is not the person who left. The people who leave still differ from the people who stay.'},
+      {t:'Pay participants in the drug group more so fewer of them leave',ok:false,why:'Unequal incentives add a new difference between groups.'}],
+    why:'Fewer people leave when staying is easy, and planning for the attrition seen in similar trials keeps the study powered when some still do.'},
 };
 /* ---------- state ---------- */
 const S={path:null,step:0,
   lab:{ideal:{q1:null,q2:null},revealed:false,obs:{q1:null,q2:null},sort:{},checked:false},
   human:{sort:{},checked:false},
-  q:{c:'',r:'',submitted:false},zoom:null};
-try{const saved=JSON.parse(localStorage.getItem('attrition-proto-v22')||'null');if(saved&&saved.path)Object.assign(S,saved);S.zoom=null}catch(e){}
-function save(){try{localStorage.setItem('attrition-proto-v22',JSON.stringify(S))}catch(e){}}
+  q:{c:null,m:[]},zoom:null};
+try{const saved=JSON.parse(localStorage.getItem('attrition-proto-v29')||'null');if(saved&&saved.path)Object.assign(S,saved);S.zoom=null;S.help=null}catch(e){}
+function save(){try{localStorage.setItem('attrition-proto-v29',JSON.stringify(S))}catch(e){}}
 
 function stepList(){
   const base=[{k:'intro',l:'Introduction'},{k:'choose',l:'Choose subject'}];
   const tail=[{k:'questions',l:'Check'},{k:'takeaways',l:'Takeaways'},{k:'congrats',l:'Done'}];
   const p=S.step>1?S.path:null;
   if(!p)return base.concat(tail);
-  if(p==='humans')return base.concat([{k:'attrition',l:'Attrition'},{k:'classify',l:'Why they left'}],tail);
-  return base.concat([{k:'attrition',l:'Attrition'},{k:'log',l:'Exclusion log'}],tail);
+  if(p==='humans')return base.concat([{k:'ideal',l:'Ideal data'},{k:'attrition',l:'Attrition'},{k:'classify',l:'Why they left'}],tail);
+  return base.concat([{k:'ideal',l:'Ideal data'},{k:'attrition',l:'Attrition'},{k:'log',l:'Exclusion log'}],tail);
 }
 
 /* ---------- chart ---------- */
 function dotPlot(subs,opts){
   opts=opts||{};const after=!!opts.after,P=PATHS[S.path];
-  const W=720,H=150,x0=84,x1=700,sc=v=>x0+(v/100)*(x1-x0);
+  const compact=!!opts.compact;const W=compact?520:720,H=150,x0=compact?74:84,x1=compact?505:700,sc=v=>x0+(v/100)*(x1-x0);
   const rows=[{arm:'control',y:44,label:P.arms[0],color:'var(--control)'},{arm:'treatment',y:104,label:P.arms[1],color:'var(--treat)'}];
   let g='';
-  for(const t of[0,25,50,75,100])g+=`<line x1="${sc(t)}" y1="14" x2="${sc(t)}" y2="128" stroke="#e5e7eb"/><text x="${sc(t)}" y="144" font-size="12" text-anchor="middle" fill="#6b7280">${t}</text>`;
+  for(const t of[0,25,50,75,100])g+=`<line x1="${sc(t)}" y1="14" x2="${sc(t)}" y2="128" stroke="#E0E0E0"/><text x="${sc(t)}" y="144" font-size="12" text-anchor="middle" fill="#757575">${t}</text>`;
   for(const r of rows){
     const list=subs.filter(d=>d.arm===r.arm);
     const vals=list.filter(d=>!after||!d.dropped).map(d=>d.x);const m=mean(vals),s=sd(vals);
     g+=`<rect x="${sc(m-s)}" y="${r.y-16}" width="${sc(m+s)-sc(m-s)}" height="32" rx="3" fill="${r.color}" opacity=".16"/>`;
-    g+=`<text x="4" y="${r.y+5}" font-size="13" font-weight="600" fill="#1f2937">${r.label}</text>`;
+    g+=`<text x="4" y="${r.y+5}" font-size="13" font-weight="600" fill="#202020">${r.label}</text>`;
     list.forEach((d,i)=>{const jy=((i*7919)%17)-8;const cy=r.y+jy;const cx=sc(d.x);
       const gone=after&&d.dropped;
       if(gone&&opts.hideDropped)return;
       if(gone){const sus=(d.kind==='suspect'||d.kind==='MAR'||d.kind==='MNAR')&&opts.flag;g+=`<circle cx="${cx}" cy="${cy}" r="5" fill="${sus?'var(--drop)':'#ffffff'}" stroke="var(--drop)" stroke-width="2" class="${opts.anim?'falling':''}" opacity="${opts.anim?1:(sus?.9:.6)}"><title>${d.id}: ${d.x.toFixed(0)}, ${d.reason}</title></circle>`}
       else g+=`<circle cx="${cx}" cy="${cy}" r="5" fill="${r.color}" opacity=".85"><title>${d.id}: ${d.x.toFixed(0)}</title></circle>`});
-    g+=`<line x1="${sc(m)}" y1="${r.y-20}" x2="${sc(m)}" y2="${r.y+20}" stroke="#1f2937" stroke-width="2.5"/>`;
+    g+=`<line x1="${sc(m)}" y1="${r.y-20}" x2="${sc(m)}" y2="${r.y+20}" stroke="#202020" stroke-width="2.5"/>`;
   }
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Dot plot of ${P.outcome} by group">${g}</svg>`;
 }
 function chartCard(title,subs,opts){const P=PATHS[S.path];const after=opts&&opts.after;const st=stats(subs,after);const total=subs.length;const kept=st.nc+st.nt;
   const sub=after?`The real result: only the ${kept} of ${total} ${P.unit} that stayed in the study.`:`This is the result if every ${P.subject} stayed in and was measured at the end.`;
-  return `<div class="chart card"><h4>${title}</h4><div class="small muted" style="margin-bottom:.25rem">${sub} ${P.outcome}.</div>${dotPlot(subs,opts)}<div class="diff-banner"><span>Difference between means: ${st.diff>=0?'+':''}${st.diff.toFixed(1)}</span><span class="n">${P.arms[1]} ${st.mt.toFixed(1)} (SD ${st.st.toFixed(1)}) minus ${P.arms[0]} ${st.mc.toFixed(1)} (SD ${st.sc.toFixed(1)})</span></div></div>`}
+  const tbl=`<table class="stat-tbl"><thead><tr><th>Group</th><th>n</th><th>Mean</th><th>SD</th></tr></thead><tbody>
+    <tr><td><i style="background:var(--control)"></i>${P.arms[0]}</td><td>${st.nc}</td><td>${st.mc.toFixed(1)}</td><td>${st.sc.toFixed(1)}</td></tr>
+    <tr><td><i style="background:var(--treat)"></i>${P.arms[1]}</td><td>${st.nt}</td><td>${st.mt.toFixed(1)}</td><td>${st.st.toFixed(1)}</td></tr>
+    <tr class="diff"><td colspan="2">Difference</td><td>${st.diff>=0?'+':''}${st.diff.toFixed(1)}</td><td></td></tr></tbody></table>`;
+  return `<div class="chart card"><h4>${title}</h4><div class="small muted" style="margin-bottom:.25rem">${sub} ${P.outcome}.</div><div class="chart-row${opts&&opts.stack?' stacked':''}"><div class="plot">${dotPlot(subs,opts)}</div>${tbl}</div>${legend(!!(opts&&opts.flag),!!after)}</div>`}
 function legend(flag,dropped){if(dropped===undefined)dropped=true;const P=PATHS[S.path];return `<div class="legend"><span><i style="background:var(--control)"></i>${P.arms[0]} group</span><span><i style="background:var(--treat)"></i>${P.arms[1]} group</span>${dropped?`<span><i style="border:2px solid var(--drop);background:#fff"></i>Dropped out, shown at its true value</span>`:''}${flag?`<span><i style="background:var(--drop)"></i>Loss that could be related to treatment</span>`:''}<span>Vertical bar = group mean, shaded band = one SD either side</span></div>`}
 function shiftWord(before,after){const d=after.diff-before.diff;return d>2?'larger':d<-2?'smaller':'about the same'}
 
@@ -451,6 +496,7 @@ const BULB='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><pat
 function hintBlock(key,text,open){return open
   ?`<div class="hint-wrap"><div class="hint-card"><button class="hint-close" data-hint="${key}:close" aria-label="Close hint"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button><div class="head"><span class="bulb">${BULB}</span>Hint:</div><p>${text}</p></div></div>`
   :`<div class="hint-wrap hint-center"><button class="hint-pill" data-hint="${key}:open" aria-expanded="false">${BULB}Show Hint</button></div>`}
+function helpBtn(key,text){return `<span class="term help-icon" tabindex="0" role="img" aria-label="${esc(text)}" data-tip="${esc(text)}"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg></span>`}
 function esc(t){return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 let ravenN=0;
 function ravenHead(){const id='rv'+(++ravenN);return `<svg viewBox="0 0 225 225" width="24" height="24" aria-hidden="true"><defs><mask id="${id}b" maskUnits="userSpaceOnUse" x="0" y="0" width="225" height="225"><path d="M0,112.5C0,50.4,50.4,0,112.5,0s112.5,50.4,112.5,112.5v75c0,20.7-16.8,37.5-37.5,37.5H37.5c-20.7,0-37.5-16.8-37.5-37.5v-75Z" fill="white"/><circle cx="61.8" cy="73.7" r="33.8" fill="black"/><circle cx="162.2" cy="73.7" r="33.8" fill="black"/><circle cx="53.8" cy="117.9" r="33.8" fill="white"/><circle cx="170.3" cy="117.9" r="33.8" fill="white"/><path d="M67.8,127c-2.4,5.8-3.6,12-3.6,18.3l47.8,79.7v-127.5c-6.3,0-12.5,1.2-18.3,3.6-5.8,2.4-11.1,5.9-15.5,10.4-4.4,4.4-8,9.7-10.4,15.5Z" fill="black"/><path d="M156.2,127c2.4,5.8,3.6,12,3.6,18.3l-47.8,79.7v-127.5c6.3,0,12.5,1.2,18.3,3.6,5.8,2.4,11.1,5.9,15.5,10.4,4.4,4.4,8,9.7,10.4,15.5Z" fill="black"/></mask><mask id="${id}p" maskUnits="userSpaceOnUse" x="0" y="0" width="225" height="225"><circle cx="61.8" cy="73.7" r="18.8" fill="white"/><circle cx="162.2" cy="73.7" r="18.8" fill="white"/><circle cx="47.7" cy="59.7" r="11.25" fill="black"/><circle cx="148.2" cy="59.7" r="11.2" fill="black"/></mask></defs><rect width="225" height="225" fill="currentColor" fill-opacity=".4" mask="url(#${id}p)"/><rect width="225" height="225" fill="currentColor" mask="url(#${id}b)"/><path d="M156.2,127c2.4,5.8,3.6,12,3.6,18.3l-47.8,79.7v-127.5c6.3,0,12.5,1.2,18.3,3.6,5.8,2.4,11.1,5.9,15.5,10.4,4.4,4.4,8,9.7,10.4,15.5Z" fill="currentColor" fill-opacity=".4"/></svg>`}
@@ -462,47 +508,48 @@ const ICON={
   mice:'<svg viewBox="0 0 40 40"><path d="M6 24c0-7 6-12 14-12s14 5 14 12c0 4-3 6-7 6H13c-4 0-7-2-7-6z"/><circle cx="12" cy="12" r="4"/><circle cx="28" cy="12" r="4"/><circle cx="14" cy="23" r="1.2" fill="currentColor"/><circle cx="26" cy="23" r="1.2" fill="currentColor"/><path d="M34 26c3 1 4 4 2 7"/></svg>',
   humans:'<svg viewBox="0 0 40 40"><circle cx="20" cy="11" r="6"/><path d="M8 34c0-7 5-12 12-12s12 5 12 12"/></svg>',
 };
-const INTRO_STEPS=['Choose a subject type: cells, mice, or humans.','See the study as designed, then watch subjects drop out and predict what happens to the result.','Work out whether the ones who left differ from the ones who stayed, and what to do about it.'];
+const INTRO_STEPS=['Choose a subject type: cells, mice, or humans.','Read the result the study was designed to give, then see what dropout did to it.','Work out whether the ones who left differ from the ones who stayed, and what to do about it.'];
 const PAGES={
   intro(){return `<div class="intro-accent"><h2>Let's see what happens to a result when subjects drop out.</h2><div class="body"><p style="margin:0">Long studies lose subjects. Cells die, animals reach endpoints, people stop coming to visits. That loss is attrition. Attrition bias is what happens when the ones you lose differ from the ones you keep: the sample at the end is no longer the sample you designed, and the result can drift away from the truth with no sign of it in the final figure.</p></div></div>
     <div class="intro-panel"><h2>Your Goal</h2><p style="margin:0">In this activity, your goal is to <strong>see how attrition reshapes a result</strong> and to <strong>recognize when dropout is harmless and when it is not</strong>, so you can design and read studies with loss in mind.</p></div>
     <div class="intro-panel"><h2>What You're About To Do</h2><ol class="numbered">${INTRO_STEPS.map((t,i)=>`<li><span class="badge" aria-hidden="true">${i+1}</span><span>${t}</span></li>`).join('')}</ol></div>`},
   congrats(){const P=PATHS[S.path];const sum=S.path==='humans'
-      ?'You watched sixteen participants leave a trial, sorted each one by why they left, and saw that only the dropout the trial never measured left a bias nothing in the data could fix.'
+      ?'You watched ten participants leave a trial, sorted each one by why they left, and saw that only the dropout the trial never measured left a bias nothing in the data could fix.'
       :S.path==='cells'?'You watched a reasonable QC rule remove the wells where the compound worked best, saw a clear effect shrink to almost nothing, and traced the shrink back to the exclusion log.':`You watched a reasonable exclusion rule remove the ${P.unit} that tolerated the treatment worst, saw the result drift from a modest effect to a large one, and traced the drift back to the exclusion log.`;
     return `<div class="congrats"><div class="ravens"><img src="assets/raven-a.svg" alt="Celebratory raven"><img src="assets/raven-b.svg" alt="Raven with party blower"><img src="assets/raven-c.svg" alt="Raven with stars"></div>
       <div class="intro-accent"><h2>Congratulations, you've completed the activity!</h2><div class="body"><p>${sum}</p>
       <div class="btns"><button class="footer-btn secondary" data-act="prevpage"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>Previous</button><button class="footer-btn secondary" data-act="restart"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>Restart</button><button class="footer-btn secondary" data-act="home"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Home</button></div></div></div></div>`},
   choose(){return `<h2>Choose a subject type</h2><p class="lede">Pick the kind of study you know best.</p>
-    <div class="choices">${Object.entries(PATHS).map(([k,P])=>`<button class="choice" aria-pressed="${S.path===k}" data-path="${k}"><span class="icon" aria-hidden="true">${ICON[k]}</span><div class="eyebrow">${P.eyebrow}</div><h3>${P.title}</h3><p>${P.sub}</p><span class="glyph" aria-hidden="true"></span></button>`).join('')}</div>`},
-  attrition(){const P=PATHS[S.path],subs=S.path==='humans'?DATA.mnar:DATA[S.path],st=S.lab;const b=stats(subs,false),a=stats(subs,true);
-    const Q=DQ[S.path],i1=Q.ideal.q1,i2=Q.ideal.q2,o1=Q.obs.q1(b,a),o2=Q.obs.q2;
-    const study=`<dl class="study"><dt>Goal</dt><dd>${P.goal}</dd><dt>Method</dt><dd>${J(P.method)}</dd></dl>`;
-    let h=`<p class="lede" style="margin-bottom:.75rem"><span class="eyebrow-inline">${P.eyebrow}</span>${P.summary}</p>`;
-    h+=`<details class="prior" id="studyDetails" style="margin:0 0 1rem" ${st.studyOpen!==false?'open':''}><summary><span>Study details</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg></span></summary><div class="content">${study}</div></details>`;
-    if(st.revealed)h+=`<div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>Attrition happens</h2><p>${J(P.attrition)}</p><p>The chart below is now the result you actually get, from the ${P.unit} that remained. The ${P.unit} that were lost are drawn as hollow orange dots so you can see where they would have been. Open the drawer under the chart to look back at the data without any attrition.</p></div></div>`;
-    h+=`<div id="chartTop" class="charts">${st.revealed?chartCard('What you actually observe',subs,{after:true,anim:true}):chartCard('The data without any attrition',subs,{after:false})}</div>${legend(false,st.revealed)}
-    <p class="small muted" style="margin-top:.5rem">Each dot is one ${P.subject}. Bar = group mean, band = one ${term('SD','SD')} either side.${st.revealed?' Hollow orange dots = '+P.unit+' that dropped out, drawn at their true value.':''}</p>`;
-    if(!st.revealed){
-      h+=`<div class="card" style="margin-top:1rem">
+    <div class="choices">${Object.entries(PATHS).map(([k,P])=>`<button class="choice" aria-pressed="${S.path===k}" data-path="${k}"><div class="eyebrow">${P.eyebrow}</div><h3>${P.title}</h3><p>${P.sub}</p><span class="glyph" aria-hidden="true"></span></button>`).join('')}</div>`},
+  ideal(){const P=PATHS[S.path],subs=S.path==='humans'?DATA.mnar:DATA[S.path],st=S.lab;
+    const Q=DQ[S.path],i1=Q.ideal.q1,i2=Q.ideal.q2;
+    let h=`<div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>${P.summary.split('?')[0]}?</h2><p>[Placeholder for instructions]</p><dl class="study" style="margin:0"><dt>Goal</dt><dd>${P.goal}</dd><dt>Method</dt><dd>${J(P.method)}</dd></dl></div></div>`;
+    h+=`<div class="charts">${chartCard('The data without any attrition',subs,{after:false})}</div>
+    <p class="small muted" style="margin-top:.5rem">Each dot is one ${P.subject}. Bar = group mean, band = one ${term('SD','SD')} either side.</p>`;
+    h+=`<div class="card" style="margin-top:1rem">
       <p><strong>${i1.q}</strong></p>${optList('i1',i1.opts,st.ideal.q1,null,st.ideal.q1!=null,i1.ans)}${st.ideal.q1!=null?fb(st.ideal.q1===i1.ans,i1.why):''}
       ${st.ideal.q1!=null?`<p style="margin-top:1rem"><strong>${i2.q}</strong></p>${optList('i2',i2.opts,st.ideal.q2,null,st.ideal.q2!=null,i2.ans)}${st.ideal.q2!=null?fb(st.ideal.q2===i2.ans,i2.why):''}`:''}
-      ${st.ideal.q2!=null?`<div class="row" style="margin-top:1rem"><button class="btn" data-act="reveal">See what actually happened</button></div>`:''}
       </div>`;
-    }else{
-      h+=`<details class="prior"><summary><span>View the data without any attrition</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg></span></summary><div class="content"><div class="charts">${chartCard('The data without any attrition',subs,{after:false})}</div></div></details>
+    return h},
+  attrition(){const P=PATHS[S.path],subs=S.path==='humans'?DATA.mnar:DATA[S.path],st=S.lab;const b=stats(subs,false),a=stats(subs,true);
+    const Q=DQ[S.path],o1=Q.obs.q1(b,a),o2=Q.obs.q2;
+    const study=`<dl class="study" style="margin:0"><dt>Goal</dt><dd>${P.goal}</dd><dt>Method</dt><dd>${J(P.method)}</dd></dl>`;
+    let h=`<div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>Attrition happens</h2><p>${J(P.attrition)}</p><p>The chart below is now the result you actually get, from the ${P.unit} that remained. The ${P.unit} that were lost are drawn as hollow orange dots so you can see where they would have been. Open the drawer under the chart to look back at the data without any attrition.</p></div></div>
+      <details class="prior" id="studyDetails" style="margin:0 0 1rem" ${st.studyOpen===true?'open':''}><summary><span>Study details</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg></span></summary><div class="content">${study}</div></details>`;
+    h+=`<div id="chartTop" class="charts">${chartCard('What you actually observe',subs,{after:true,anim:true})}</div>
+    <p class="small muted" style="margin-top:.5rem">Each dot is one ${P.subject}. Bar = group mean, band = one ${term('SD','SD')} either side. Hollow orange dots = ${P.unit} that dropped out, drawn at their true value.</p>`;
+    h+=`<details class="prior"><summary><span>View the data without any attrition</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg></span></summary><div class="content"><div class="charts">${chartCard('The data without any attrition',subs,{after:false})}</div></div></details>
       <div class="card" style="margin-top:1rem">
-      <p><strong>${o1.q}</strong></p>${optList('o1',o1.opts,st.obs.q1,null,st.obs.q1!=null,o1.ans)}${st.obs.q1==null?hintBlock('o1',`Look at the purple banner under each chart. Open the drawer above to see the difference between means in the data without any attrition, then compare it with the difference under the chart you see now.`,!!st.hint):''}${st.obs.q1!=null?fb(st.obs.q1===o1.ans,o1.why):''}
+      <p><strong>${o1.q}</strong></p>${optList('o1',o1.opts,st.obs.q1,null,st.obs.q1!=null,o1.ans)}${st.obs.q1==null?hintBlock('o1',`Look at the table beside each chart. Open the drawer above to see the difference between means in the data without any attrition, then compare it with the difference beside the chart you see now.`,!!st.hint):''}${st.obs.q1!=null?fb(st.obs.q1===o1.ans,o1.why):''}
       ${st.obs.q1!=null?`<p style="margin-top:1rem"><strong>${o2.q}</strong></p>${optList('o2',o2.opts,st.obs.q2,null,st.obs.q2!=null,o2.ans)}${st.obs.q2!=null?fb(st.obs.q2===o2.ans,o2.why):''}`:''}
       </div>`;
-    }
     return h},
   log(){const P=PATHS[S.path],subs=DATA[S.path],st=S.lab;const lost=subs.filter(d=>d.dropped);
     const wrong=lost.filter(d=>st.sort[d.id]!==d.kind);const allRight=st.checked&&wrong.length===0;
-    let h=`<h2>Read the exclusion log</h2><p class="lede">Every lost ${P.subject} had a recorded reason. The reasons all sound routine. The question is whether each reason could depend on which group the ${P.subject} was in.</p>
-    <div class="charts">${chartCard(allRight?'What you actually observe, with the losses that could be related to treatment filled in':'What you actually observe',subs,{after:true,flag:allRight})}</div>${legend(allRight)}
+    let h=`<div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>Read the exclusion log</h2><p>Every lost ${P.subject} had a recorded reason. The reasons all sound routine. The question is whether each reason could depend on which group the ${P.subject} was in.</p></div></div>
+    <div class="charts">${chartCard(allRight?'What you actually observe, with the losses that could be related to treatment filled in':'What you actually observe',subs,{after:true,flag:allRight})}</div>
     <p style="margin-top:1rem">For each entry, decide: is this loss <strong>unrelated to treatment</strong>, or <strong>could it be related to treatment</strong>?</p>
-    <div class="tbl card"><table><thead><tr><th>ID</th><th>Group</th><th>Reason recorded</th><th>Your call</th></tr></thead><tbody>${lost.map(d=>{const bad=st.checked&&st.sort[d.id]!==d.kind;return `<tr class="${bad?'needs-change':''}"><td class="stat">${d.id}</td><td><span class="pill ${d.arm}">${d.arm==='control'?P.arms[0]:P.arms[1]}</span></td><td>${J(d.reason)}</td><td><span class="seg"><button data-sort="${d.id}:benign" aria-pressed="${st.sort[d.id]==='benign'}" ${allRight?'disabled':''}>Unrelated</button><button data-sort="${d.id}:suspect" aria-pressed="${st.sort[d.id]==='suspect'}" ${allRight?'disabled':''}>Could be related</button></span></td></tr>`}).join('')}</tbody></table></div>`;
+    <div class="tbl card"><table><thead><tr><th>Group</th><th>Reason recorded</th><th><span class="th-help">${helpBtn('lab',`Unrelated to treatment: the reason would have happened whichever group the ${P.subject} was in, such as a failed surgery, contamination, or a protocol exclusion like an edge well. Losing these is like losing a random slice of the group.\n\nCould be related to treatment: the treatment itself could make the reason more likely, such as a death, a humane endpoint, or a QC failure that tracks how the ${P.subject} responded. Losing these removes a non-random slice of one group.`)}</span></th></tr></thead><tbody>${lost.map(d=>{const bad=st.checked&&st.sort[d.id]!==d.kind;return `<tr class="${bad?'needs-change':''}"><td><span class="pill ${d.arm}">${d.arm==='control'?P.arms[0]:P.arms[1]}</span></td><td class="txt">${J(d.reason)}</td><td><span class="seg"><button data-sort="${d.id}:benign" aria-pressed="${st.sort[d.id]==='benign'}" ${allRight?'disabled':''}>Unrelated</button><button data-sort="${d.id}:suspect" aria-pressed="${st.sort[d.id]==='suspect'}" ${allRight?'disabled':''}>Could be related</button></span></td></tr>`}).join('')}</tbody></table></div>`;
     const done=lost.every(d=>st.sort[d.id]);
     if(!allRight){h+=`<div class="row" style="margin-top:1rem"><button class="btn" data-act="sort" ${done?'':'disabled'}>${st.checked?'Check again':'Check my calls'}</button>${done?'':'<span class="small muted">Make a call on every row.</span>'}</div>`;
       if(st.checked)h+=`<div class="feedback bad" style="margin-top:1rem"><p style="margin:0"><strong>${wrong.length} ${wrong.length===1?'row needs':'rows need'} another look.</strong> The highlighted rows do not match our reading. Ask of each one: could the treatment itself make this reason more likely?</p></div>`}
@@ -513,38 +560,34 @@ const PAGES={
     const wrong=lost.filter(d=>st.sort[d.id]!==d.kind);const allRight=st.checked&&wrong.length===0;
     const n=k=>lost.filter(d=>d.kind===k).length;
     let h=`
-    <div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>The data cannot tell you why someone left</h2><p>Sixteen participants are missing from the chart below. The numbers that remain look the same whatever the reason those sixteen had for leaving. But the reason decides what you can do about it.</p><p>Three kinds of reason, three different answers:</p></div></div>
-    <div class="card" style="margin-bottom:1rem"><table><thead><tr><th>Why they left</th><th>Name</th><th>What you can do</th></tr></thead><tbody>
-      <tr><td>For reasons unrelated to the study, such as moving away</td><td>${term('MCAR')}</td><td>Nothing to fix. Analyze the people who stayed.</td></tr>
-      <tr><td>For a reason you recorded, such as age or baseline severity</td><td>${term('MAR')}</td><td>Adjust for that variable.</td></tr>
-      <tr><td>For a reason you never recorded, such as side effects</td><td>${term('MNAR')}</td><td>No adjustment can fix it. Run a ${term('sens','sensitivity analysis')}.</td></tr>
+    <div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>The data cannot tell you why someone left</h2><p>Ten participants are missing from the chart below. The numbers that remain look the same whatever the reason those sixteen had for leaving. But the reason decides what you can do about it.</p><p>Three kinds of reason, three different answers.</p></div></div>
+    <div class="charts">${chartCard(allRight?'What you actually observe, with the losses that could depend on the outcome filled in':'What you actually observe',subs,{after:true,flag:allRight})}</div>
+    <div class="card" style="margin:1rem 0"><table><thead><tr><th>Why they left</th><th>Name</th><th>What you can do</th></tr></thead><tbody>
+      <tr><td class="txt">For reasons unrelated to the study, such as moving away</td><td>${term('MCAR')}</td><td class="txt">Nothing to fix. Analyze the people who stayed.</td></tr>
+      <tr><td class="txt">For a reason you recorded, such as age or baseline severity</td><td>${term('MAR')}</td><td class="txt">Adjust for that variable.</td></tr>
+      <tr><td class="txt">For a reason you never recorded, such as side effects</td><td>${term('MNAR')}</td><td class="txt">No adjustment can fix it. Run a ${term('sens','sensitivity analysis')}.</td></tr>
     </tbody></table></div>
-    <div class="charts">${chartCard(allRight?'What you actually observe, with the losses that could depend on the outcome filled in':'What you actually observe',subs,{after:true,flag:allRight})}</div>${legend(allRight,true)}
     <p style="margin-top:1rem">Every participant who left has a short note in the trial file. Age was recorded at enrollment. For each one, decide which kind of dropout it is.</p>
-    <div class="tbl card"><table><thead><tr><th>ID</th><th>Group</th><th>Age</th><th>Note in the file</th><th>Your call</th></tr></thead><tbody>${lost.map(d=>{const bad=st.checked&&st.sort[d.id]!==d.kind;return `<tr class="${bad?'needs-change':''}"><td class="stat">${d.id}</td><td><span class="pill ${d.arm}">${d.arm==='control'?P.arms[0]:P.arms[1]}</span></td><td class="stat">${d.age}</td><td>${J(d.reason)}</td><td><span class="seg">${['MCAR','MAR','MNAR'].map(k=>`<button data-sort="${d.id}:${k}" aria-pressed="${st.sort[d.id]===k}" ${allRight?'disabled':''}>${k}</button>`).join('')}</span></td></tr>`}).join('')}</tbody></table></div>`;
+    <div class="tbl card"><table><thead><tr><th>Group</th><th>Age</th><th>Note in the file</th><th><span class="th-help">${helpBtn('hum',`MCAR: the reason has nothing to do with the trial, the drug, or how the person was doing.\n\nMAR: the reason is tied to something the trial recorded, such as age.\n\nMNAR: the reason is tied to something the trial never recorded, such as side effects, or no reason was recorded at all.`)}</span></th></tr></thead><tbody>${lost.map(d=>{const bad=st.checked&&st.sort[d.id]!==d.kind;return `<tr class="${bad?'needs-change':''}"><td><span class="pill ${d.arm}">${d.arm==='control'?P.arms[0]:P.arms[1]}</span></td><td class="stat">${d.age}</td><td class="txt">${J(d.reason)}</td><td><span class="seg">${['MCAR','MAR','MNAR'].map(k=>`<button data-sort="${d.id}:${k}" aria-pressed="${st.sort[d.id]===k}" ${allRight?'disabled':''}>${k}</button>`).join('')}</span></td></tr>`}).join('')}</tbody></table></div>`;
     const done=lost.every(d=>st.sort[d.id]);
     if(!allRight){h+=`<div class="row" style="margin-top:1rem"><button class="btn" data-act="sort" ${done?'':'disabled'}>${st.checked?'Check again':'Check my calls'}</button>${done?'':'<span class="small muted">Make a call on every row.</span>'}</div>`;
       if(st.checked)h+=`<div class="feedback bad" style="margin-top:1rem"><p style="margin:0"><strong>${wrong.length} ${wrong.length===1?'row needs':'rows need'} another look.</strong> The highlighted rows do not match our reading. Ask of each one: is the reason unrelated to the study, tied to something the trial recorded, or tied to something it never recorded?</p></div>`}
     else{h+=`<div class="feedback good" style="margin-top:1rem"><p><strong>All ${lost.length} match our reading.</strong> ${n('MCAR')} left for reasons unrelated to the trial. ${n('MAR')} left because the monthly visits were too hard to reach, and they are the oldest participants, so age, which was recorded, explains that loss. ${n('MNAR')} left for reasons the trial never measured: side effects, or no reason at all.</p><p style="margin:0">The filled orange dots are the losses that could depend on the outcome, and they sit at the low end of the ${P.arms[1]} group. The age-related loss can be adjusted for. The unmeasured loss cannot, so this analysis needs a ${term('sens','sensitivity analysis')}: if the people who left had done as badly as is plausible, would the conclusion survive?</p></div>`}
     return h},
-  questions(){const P=PATHS[S.path],subs=S.path==='humans'?DATA.mnar:DATA[S.path];const q=S.q;const O=OPEN[S.path];
-    const ready=q.c.trim().length>0&&q.r.trim().length>0;
-    let h=`<h2>Check your understanding</h2>
-    <div class="charts pair"><div class="zoomable" data-zoom="ideal" role="button" tabindex="0" aria-label="Enlarge chart: the data without any attrition">${chartCard('The data without any attrition',subs,{after:false})}</div><div class="zoomable" data-zoom="obs" role="button" tabindex="0" aria-label="Enlarge chart: what you actually observe">${chartCard('What you actually observe',subs,{after:true})}</div></div>${legend(false,true)}
-    <p class="small muted" style="margin-top:.5rem">Click a chart to enlarge it.</p>
+  questions(){const P=PATHS[S.path],subs=S.path==='humans'?DATA.mnar:DATA[S.path];const q=S.q;const M=MULTI[S.path],C=P.conclude;
+    const picks=q.m||[];
+    let h=`<h2>Check your understanding</h2><p>Compare the two datasets with and without attrition. Click on a chart to enlarge both if needed.</p>
+    <div class="charts pair"><div class="zoomable" data-zoom="ideal" role="button" tabindex="0" aria-label="Enlarge both charts">${chartCard('The data without any attrition',subs,{after:false,stack:true,compact:true})}</div><div class="zoomable" data-zoom="obs" role="button" tabindex="0" aria-label="Enlarge both charts">${chartCard('What you actually observe',subs,{after:true,stack:true,compact:true})}</div></div>
     <div class="stack" style="margin-top:1.25rem">`;
-    for(const [key,prompt,c4r] of [['c',O.q1,O.a1],['r',O.q2,O.a2]]){
-      h+=`<div class="card"><h3>${prompt}</h3>`;
-      if(!q.submitted)h+=`<textarea class="ta" data-open="${key}" rows="4" placeholder="Write a few sentences.">${esc(q[key])}</textarea>`;
-      else h+=`<div class="stack">${respCard('you',q[key])}${respCard('c4r',c4r)}</div>`;
-      h+=`</div>`}
+    h+=`<div class="card"><h3>${C.q}</h3>${optList('qc',C.opts,q.c,null,q.c!=null,C.ans)}${q.c!=null?fb(q.c===C.ans,C.why):''}</div>`;
+    if(q.c!=null){const found=M.opts.filter((o,i)=>o.ok&&picks.includes(i)).length,total=M.opts.filter(o=>o.ok).length;
+      h+=`<div class="card"><h3>${M.q}</h3><p class="small muted" style="margin:-.25rem 0 .75rem">Each choice is checked as soon as you select it. ${found} of ${total} found.</p><div class="opts" role="group">${order('multi',M.opts.length).map(i=>{const o=M.opts[i];const on=picks.includes(i);const cls='opt check'+(on?(o.ok?' correct':' wrong'):'');return `<button class="${cls}" role="checkbox" aria-checked="${on}" data-multi="${i}" ${on?'disabled':''}><span class="box" aria-hidden="true"></span><span>${o.t}${on?`<span class="opt-why">${o.ok?'Yes.':'No.'} ${o.why}</span>`:''}</span></button>`}).join('')}</div>${found===total?`<div class="feedback good" style="margin-top:.75rem"><p style="margin:0"><strong>All ${total} found.</strong> ${M.why}</p></div>`:''}</div>`}
     h+=`</div>`;
-    if(!q.submitted)h+=`<div class="row" style="margin-top:1rem;justify-content:flex-end"><button class="btn" data-act="submitq" ${ready?'':'disabled'}>Submit</button></div>`;
     return h},
   takeaways(){const P=PATHS[S.path],subs=S.path==='humans'?DATA.mnar:DATA[S.path];const b=stats(subs,false),a=stats(subs,true);
     const lost=subs.filter(d=>d.dropped).length,lostT=subs.filter(d=>d.dropped&&d.arm==='treatment').length;const grew=a.diff>b.diff;
     const fmt=v=>(v>=0?'+':'')+v.toFixed(1);
-    return `<h2>Takeaways</h2>
+    return `
     <div class="takeaway"><h3>Takeaway: Random loss is mostly harmless. Loss tied to treatment or outcome is not.</h3><div class="body"><p style="margin:0">The question to ask of any study with attrition is not how many were lost, but whether the ones lost differ from the ones kept.</p></div></div>
     <h3 class="tk-h">What you saw</h3>
     <p style="margin:0 0 .75rem">${lost} of ${subs.length} ${P.unit} dropped out, ${lostT} of them from the ${P.arms[1]} group. Here is what that did to the difference between the two group means.</p>
@@ -559,26 +602,25 @@ const PAGES={
 /* ---------- render ---------- */
 function canContinue(){const k=stepList()[S.step].k;
   if(k==='choose')return !!S.path;
-  if(k==='attrition')return S.lab.revealed&&S.lab.obs.q1!=null&&S.lab.obs.q2!=null;
+  if(k==='ideal')return S.lab.ideal.q1!=null&&S.lab.ideal.q2!=null;
+  if(k==='attrition')return S.lab.obs.q1!=null&&S.lab.obs.q2!=null;
   if(k==='log')return S.lab.checked&&DATA[S.path].filter(d=>d.dropped).every(d=>S.lab.sort[d.id]===d.kind);
   if(k==='classify')return S.human.checked&&DATA.mnar.filter(d=>d.dropped).every(d=>S.human.sort[d.id]===d.kind);
-  if(k==='questions')return !!S.q.submitted;
+  if(k==='questions'){if(S.q.c==null)return false;const M=MULTI[S.path];return M.opts.every((o,i)=>!o.ok||(S.q.m||[]).includes(i))}
   return k!=='congrats'}
 function hintFor(){const k=stepList()[S.step].k;
   if(k==='choose'&&!S.path)return 'Pick a subject type to continue.';
-  if(k==='attrition'&&!canContinue())return S.lab.revealed?'Answer both questions about the observed result.':'Answer the questions about the ideal result, then reveal what happened.';
+  if(k==='ideal'&&!canContinue())return 'Answer both questions about the ideal result to continue.';
+  if(k==='attrition'&&!canContinue())return 'Answer both questions about the observed result.';
   if(k==='log'&&!canContinue())return 'Sort every row and check your calls. All rows must match to continue.';
   if(k==='classify'&&!canContinue())return 'Classify every participant who left and check your calls. All rows must match to continue.';
-  if(k==='questions'&&!canContinue())return 'Answer both questions to continue.';
+  if(k==='questions'&&!canContinue())return S.q.c!=null?'Find every option that protects against attrition bias to continue.':'Answer the first question to continue.';
   return ''}
 function renderZoom(){let z=document.getElementById('zoom');if(!S.zoom){if(z)z.remove();return}
-  const subs=S.path==='humans'?DATA.mnar:DATA[S.path];const after=S.zoom==='obs';
+  const subs=S.path==='humans'?DATA.mnar:DATA[S.path];
   if(!z){z=document.createElement('div');z.id='zoom';document.body.appendChild(z)}
-  const other=after?'ideal':'obs';
-  z.innerHTML=`<div class="zoom-overlay" data-zoomclose="1" role="dialog" aria-modal="true" aria-label="Enlarged chart"><div class="zoom-box"><div class="zoom-bar"><span class="small muted">${after?'2 of 2':'1 of 2'}</span><button class="zoom-close" data-act="closezoom" aria-label="Close"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button></div>
-    <div class="zoom-body"><button class="zoom-nav" data-zoomto="${other}" aria-label="${after?'Show the data without any attrition':'Show what you actually observe'}"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button>
-    <div class="charts" style="flex:1;min-width:0">${chartCard(after?'What you actually observe':'The data without any attrition',subs,{after})}</div>
-    <button class="zoom-nav" data-zoomto="${other}" aria-label="${after?'Show the data without any attrition':'Show what you actually observe'}"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg></button></div>${legend(false,after)}</div></div>`}
+  z.innerHTML=`<div class="zoom-overlay" data-zoomclose="1" role="dialog" aria-modal="true" aria-label="Enlarged charts"><div class="zoom-box"><div class="zoom-bar"><span class="small muted">Compare the two results</span><button class="zoom-close" data-act="closezoom" aria-label="Close"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button></div>
+    <div class="charts">${chartCard('The data without any attrition',subs,{after:false})}${chartCard('What you actually observe',subs,{after:true})}</div></div></div>`}
 function render(){const list=stepList();S.step=Math.min(S.step,list.length-1);const k=list[S.step].k;
   const untracked=k==='intro'||k==='congrats';
   const tracked=list.filter(s=>s.k!=='intro'&&s.k!=='congrats');
@@ -590,11 +632,13 @@ function render(){const list=stepList();S.step=Math.min(S.step,list.length-1);co
   document.getElementById('nextLabel').textContent=k==='takeaways'?'Complete Activity':'Next';
   document.getElementById('footer').hidden=k==='congrats';document.body.classList.toggle('no-footer',k==='congrats');
   document.getElementById('hint').textContent=hintFor();
-  renderZoom();save();if(render.lastStep!==S.step)window.scrollTo({top:0});render.lastStep=S.step}
+  renderZoom();save();if(render.lastStep!==S.step){window.scrollTo({top:0})}render.lastStep=S.step}
 
 (function(){const tip=document.createElement('div');tip.id='tip';document.body.appendChild(tip);let cur=null;
-  function show(el){cur=el;tip.textContent=el.dataset.tip;tip.classList.add('show');const r=el.getBoundingClientRect();tip.style.left='0px';tip.style.top='0px';const w=tip.offsetWidth,h=tip.offsetHeight;
-    let x=r.left,y=r.bottom+6;if(x+w>window.innerWidth-8)x=Math.max(8,window.innerWidth-8-w);if(y+h>window.innerHeight-8)y=r.top-6-h;tip.style.left=x+'px';tip.style.top=y+'px'}
+  function show(el){cur=el;tip.textContent=el.dataset.tip;tip.classList.add('show');const r=el.getBoundingClientRect();tip.style.left='0px';tip.style.top='0px';const w=tip.offsetWidth,h=tip.offsetHeight,GAP=10,PAD=16;
+    const cx=r.left+r.width/2;let x=cx-w/2;if(x+w>window.innerWidth-PAD)x=window.innerWidth-PAD-w;if(x<PAD)x=PAD;
+    let above=r.top-GAP-h>=PAD;let y=above?r.top-GAP-h:r.bottom+GAP;tip.classList.toggle('above',above);tip.classList.toggle('below',!above);
+    tip.style.setProperty('--ax',Math.max(14,Math.min(w-14,cx-x))+'px');tip.style.left=x+'px';tip.style.top=y+'px'}
   function hide(){cur=null;tip.classList.remove('show')}
   document.addEventListener('mouseover',e=>{const t=e.target.closest('.term');if(t)show(t);else if(cur)hide()});
   document.addEventListener('focusin',e=>{const t=e.target.closest('.term');if(t)show(t)});
@@ -603,27 +647,23 @@ function render(){const list=stepList();S.step=Math.min(S.step,list.length-1);co
 })();
 document.addEventListener('toggle',e=>{if(e.target.id==='studyDetails'){S.lab.studyOpen=e.target.open;save()}},true);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.zoom){S.zoom=null;renderZoom()}
-  if(S.zoom&&(e.key==='ArrowLeft'||e.key==='ArrowRight')){S.zoom=S.zoom==='obs'?'ideal':'obs';renderZoom()}
   if((e.key==='Enter'||e.key===' ')&&e.target.dataset&&e.target.dataset.zoom){e.preventDefault();S.zoom=e.target.dataset.zoom;renderZoom()}});
-document.addEventListener('input',e=>{const t=e.target;if(!t.dataset||!t.dataset.open)return;S.q[t.dataset.open]=t.value;save();
-  const ready=S.q.c.trim().length>0&&S.q.r.trim().length>0;const b=document.querySelector('[data-act="submitq"]');if(b)b.disabled=!ready});
 document.addEventListener('click',e=>{
   const zc=e.target.closest('[data-zoomclose]');if(zc&&e.target===zc){S.zoom=null;renderZoom();return}
   const zb=e.target.closest('[data-zoom]');if(zb){S.zoom=zb.dataset.zoom;renderZoom();return}
   const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.multi!=null){const i=+b.dataset.multi;S.q.m=S.q.m||[];if(!S.q.m.includes(i))S.q.m.push(i);render();return}
   if(b.dataset.hint){const[k,op]=b.dataset.hint.split(':');S.lab.hint=op==='open';render();return}
   if(b.dataset.act==='closezoom'){S.zoom=null;renderZoom();return}
-  if(b.dataset.zoomto){S.zoom=b.dataset.zoomto;renderZoom();return}
-  if(b.dataset.path){S.path=b.dataset.path;S.salt=Math.floor(Math.random()*1e9);S.lab={ideal:{q1:null,q2:null},revealed:false,obs:{q1:null,q2:null},sort:{},checked:false,studyOpen:true};S.human={sort:{},checked:false};S.q={c:'',r:'',submitted:false};render();return}
+  if(b.dataset.path){S.path=b.dataset.path;S.salt=Math.floor(Math.random()*1e9);S.lab={ideal:{q1:null,q2:null},revealed:false,obs:{q1:null,q2:null},sort:{},checked:false,studyOpen:false};S.human={sort:{},checked:false};S.q={c:null,m:[]};render();return}
   if(b.dataset.pick){const[name,i]=b.dataset.pick.split(':');const idx=+i;
     if(name==='i1'){if(S.lab.ideal.q1==null)S.lab.ideal.q1=idx}
     else if(name==='i2'){if(S.lab.ideal.q2==null)S.lab.ideal.q2=idx}
     else if(name==='o1'){if(S.lab.obs.q1==null)S.lab.obs.q1=idx}
     else if(name==='o2'){if(S.lab.obs.q2==null)S.lab.obs.q2=idx}
+    else if(name==='qc'){if(S.q.c==null)S.q.c=idx}
     render();return}
   if(b.dataset.act){const[a,key]=b.dataset.act.split(':');
-    if(a==='submitq'){S.q.submitted=true;render();return}
-    if(a==='reveal'){S.lab.revealed=true;S.lab.studyOpen=false;render();window.scrollTo({top:0,behavior:'smooth'});return}
     if(a==='sort'){if(S.path==='humans')S.human.checked=true;else S.lab.checked=true}
     if(a==='restart'){S.path=null;S.step=1;S.salt=Math.floor(Math.random()*1e9)}
     if(a==='prevpage'){S.step--}
