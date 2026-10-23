@@ -125,7 +125,7 @@ p{margin:0 0 .75rem}
 .instr p:last-child{margin-bottom:0}
 .feedback{border-left:4px solid var(--info);background:var(--takeaway-fill);padding:.75rem 1rem;border-radius:0 8px 8px 0}
 .feedback.good{border-left-color:var(--success);background:var(--success-fill)}
-.feedback.bad{border-left-color:var(--warning);background:var(--warning-fill)}
+.feedback.bad{border-left-color:var(--error);background:var(--error-fill)}
 .feedback p:last-child{margin:0}
 /* Charts */
 .charts{display:grid;grid-template-columns:1fr;gap:1rem}
@@ -192,6 +192,7 @@ tr.needs-change td:first-child{box-shadow:inset 4px 0 0 var(--warning)}
 .legend{display:flex;flex-wrap:wrap;gap:.5rem 1rem;font-size:0.75rem;color:var(--muted);margin-top:.75rem;padding-top:.6rem;border-top:1px solid var(--border)}
 .legend span{display:inline-flex;align-items:center;gap:.35rem}
 .legend i{width:12px;height:12px;border-radius:50%;display:inline-block}
+.chart-note{margin:.4rem 0 0}
 .delta{font-size:1.25rem;font-weight:600;font-variant-numeric:tabular-nums}
 /* Exclusion log table */
 table{border-collapse:collapse;width:100%;font-size:0.875rem}
@@ -443,8 +444,8 @@ const S={path:null,step:0,
   lab:{ideal:{q1:null,q2:null},revealed:false,obs:{q1:null,q2:null},sort:{},checked:false},
   human:{sort:{},checked:false},
   q:{c:null,m:[]},zoom:null};
-try{const saved=JSON.parse(localStorage.getItem('attrition-proto-v29')||'null');if(saved&&saved.path)Object.assign(S,saved);S.zoom=null;S.help=null}catch(e){}
-function save(){try{localStorage.setItem('attrition-proto-v29',JSON.stringify(S))}catch(e){}}
+try{const saved=JSON.parse(localStorage.getItem('attrition-proto-v30')||'null');if(saved&&saved.path)Object.assign(S,saved);S.zoom=null;S.help=null}catch(e){}
+function save(){try{localStorage.setItem('attrition-proto-v30',JSON.stringify(S))}catch(e){}}
 
 function stepList(){
   const base=[{k:'intro',l:'Introduction'},{k:'choose',l:'Choose subject'}];
@@ -483,7 +484,7 @@ function chartCard(title,subs,opts){const P=PATHS[S.path];const after=opts&&opts
     <tr><td><i style="background:var(--treat)"></i>${P.arms[1]}</td><td>${st.nt}</td><td>${st.mt.toFixed(1)}</td><td>${st.st.toFixed(1)}</td></tr>
     <tr class="diff"><td colspan="2">Difference</td><td>${st.diff>=0?'+':''}${st.diff.toFixed(1)}</td><td></td></tr></tbody></table>`;
   return `<div class="chart card"><h4>${title}</h4><div class="small muted" style="margin-bottom:.25rem">${sub} ${P.outcome}.</div><div class="chart-row${opts&&opts.stack?' stacked':''}"><div class="plot">${dotPlot(subs,opts)}</div>${tbl}</div>${legend(!!(opts&&opts.flag),!!after)}</div>`}
-function legend(flag,dropped){if(dropped===undefined)dropped=true;const P=PATHS[S.path];return `<div class="legend"><span><i style="background:var(--control)"></i>${P.arms[0]} group</span><span><i style="background:var(--treat)"></i>${P.arms[1]} group</span>${dropped?`<span><i style="border:2px solid var(--drop);background:#fff"></i>Dropped out, shown at its true value</span>`:''}${flag?`<span><i style="background:var(--drop)"></i>Loss that could be related to treatment</span>`:''}<span>Vertical bar = group mean, shaded band = one SD either side</span></div>`}
+function legend(flag,dropped){if(dropped===undefined)dropped=true;const P=PATHS[S.path];return `<div class="legend"><span><i style="background:var(--control)"></i>${P.arms[0]} group</span><span><i style="background:var(--treat)"></i>${P.arms[1]} group</span>${dropped?`<span><i style="border:2px solid var(--drop);background:#fff"></i>Dropped out, shown at its true value</span>`:''}${flag?`<span><i style="background:var(--drop)"></i>Loss that could be related to treatment</span>`:''}</div><p class="small muted chart-note">Each dot is one ${P.subject}. Bar = group mean, band = one ${term('SD','SD')} either side.${dropped?` Hollow orange dots = ${P.unit} that dropped out, drawn at their true value.`:''}</p>`}
 function shiftWord(before,after){const d=after.diff-before.diff;return d>2?'larger':d<-2?'smaller':'about the same'}
 
 /* ---------- pages ---------- */
@@ -524,8 +525,7 @@ const PAGES={
   ideal(){const P=PATHS[S.path],subs=S.path==='humans'?DATA.mnar:DATA[S.path],st=S.lab;
     const Q=DQ[S.path],i1=Q.ideal.q1,i2=Q.ideal.q2;
     let h=`<div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>${P.summary.split('?')[0]}?</h2><p>[Placeholder for instructions]</p><dl class="study" style="margin:0"><dt>Goal</dt><dd>${P.goal}</dd><dt>Method</dt><dd>${J(P.method)}</dd></dl></div></div>`;
-    h+=`<div class="charts">${chartCard('The data without any attrition',subs,{after:false})}</div>
-    <p class="small muted" style="margin-top:.5rem">Each dot is one ${P.subject}. Bar = group mean, band = one ${term('SD','SD')} either side.</p>`;
+    h+=`<div class="charts">${chartCard('The data without any attrition',subs,{after:false})}</div>`;
     h+=`<div class="card" style="margin-top:1rem">
       <p><strong>${i1.q}</strong></p>${optList('i1',i1.opts,st.ideal.q1,null,st.ideal.q1!=null,i1.ans)}${st.ideal.q1!=null?fb(st.ideal.q1===i1.ans,i1.why):''}
       ${st.ideal.q1!=null?`<p style="margin-top:1rem"><strong>${i2.q}</strong></p>${optList('i2',i2.opts,st.ideal.q2,null,st.ideal.q2!=null,i2.ans)}${st.ideal.q2!=null?fb(st.ideal.q2===i2.ans,i2.why):''}`:''}
@@ -536,8 +536,7 @@ const PAGES={
     const study=`<dl class="study" style="margin:0"><dt>Goal</dt><dd>${P.goal}</dd><dt>Method</dt><dd>${J(P.method)}</dd></dl>`;
     let h=`<div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>Attrition happens</h2><p>${J(P.attrition)}</p><p>The chart below is now the result you actually get, from the ${P.unit} that remained. The ${P.unit} that were lost are drawn as hollow orange dots so you can see where they would have been. Open the drawer under the chart to look back at the data without any attrition.</p></div></div>
       <details class="prior" id="studyDetails" style="margin:0 0 1rem" ${st.studyOpen===true?'open':''}><summary><span>Study details</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg></span></summary><div class="content">${study}</div></details>`;
-    h+=`<div id="chartTop" class="charts">${chartCard('What you actually observe',subs,{after:true,anim:true})}</div>
-    <p class="small muted" style="margin-top:.5rem">Each dot is one ${P.subject}. Bar = group mean, band = one ${term('SD','SD')} either side. Hollow orange dots = ${P.unit} that dropped out, drawn at their true value.</p>`;
+    h+=`<div id="chartTop" class="charts">${chartCard('What you actually observe',subs,{after:true,anim:true})}</div>`;
     h+=`<details class="prior"><summary><span>View the data without any attrition</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg></span></summary><div class="content"><div class="charts">${chartCard('The data without any attrition',subs,{after:false})}</div></div></details>
       <div class="card" style="margin-top:1rem">
       <p><strong>${o1.q}</strong></p>${optList('o1',o1.opts,st.obs.q1,null,st.obs.q1!=null,o1.ans)}${st.obs.q1==null?hintBlock('o1',`Look at the table beside each chart. Open the drawer above to see the difference between means in the data without any attrition, then compare it with the difference beside the chart you see now.`,!!st.hint):''}${st.obs.q1!=null?fb(st.obs.q1===o1.ans,o1.why):''}
@@ -576,7 +575,7 @@ const PAGES={
     return h},
   questions(){const P=PATHS[S.path],subs=S.path==='humans'?DATA.mnar:DATA[S.path];const q=S.q;const M=MULTI[S.path],C=P.conclude;
     const picks=q.m||[];
-    let h=`<h2>Check your understanding</h2><p>Compare the two datasets with and without attrition. Click on a chart to enlarge both if needed.</p>
+    let h=`<div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>Check your understanding</h2><p>Compare the two datasets with and without attrition. Click on a chart to enlarge both if needed.</p></div></div>
     <div class="charts pair"><div class="zoomable" data-zoom="ideal" role="button" tabindex="0" aria-label="Enlarge both charts">${chartCard('The data without any attrition',subs,{after:false,stack:true,compact:true})}</div><div class="zoomable" data-zoom="obs" role="button" tabindex="0" aria-label="Enlarge both charts">${chartCard('What you actually observe',subs,{after:true,stack:true,compact:true})}</div></div>
     <div class="stack" style="margin-top:1.25rem">`;
     h+=`<div class="card"><h3>${C.q}</h3>${optList('qc',C.opts,q.c,null,q.c!=null,C.ans)}${q.c!=null?fb(q.c===C.ans,C.why):''}</div>`;
@@ -619,7 +618,7 @@ function hintFor(){const k=stepList()[S.step].k;
 function renderZoom(){let z=document.getElementById('zoom');if(!S.zoom){if(z)z.remove();return}
   const subs=S.path==='humans'?DATA.mnar:DATA[S.path];
   if(!z){z=document.createElement('div');z.id='zoom';document.body.appendChild(z)}
-  z.innerHTML=`<div class="zoom-overlay" data-zoomclose="1" role="dialog" aria-modal="true" aria-label="Enlarged charts"><div class="zoom-box"><div class="zoom-bar"><span class="small muted">Compare the two results</span><button class="zoom-close" data-act="closezoom" aria-label="Close"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button></div>
+  z.innerHTML=`<div class="zoom-overlay" data-zoomclose="1" role="dialog" aria-modal="true" aria-label="Enlarged charts"><div class="zoom-box"><div class="zoom-bar"><span></span><button class="zoom-close" data-act="closezoom" aria-label="Close"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button></div>
     <div class="charts">${chartCard('The data without any attrition',subs,{after:false})}${chartCard('What you actually observe',subs,{after:true})}</div></div></div>`}
 function render(){const list=stepList();S.step=Math.min(S.step,list.length-1);const k=list[S.step].k;
   const untracked=k==='intro'||k==='congrats';
