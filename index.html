@@ -558,7 +558,7 @@ const PAGES={
     const wrong=lost.filter(d=>st.sort[d.id]!==d.kind);const allRight=st.checked&&wrong.length===0;
     const n=k=>lost.filter(d=>d.kind===k).length;
     let h=`
-    <div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>The data cannot tell you why someone left</h2><p>Ten participants are missing from the chart below. The numbers that remain look the same whatever the reason those sixteen had for leaving. But the reason decides what you can do about it.</p><p>Three kinds of reason, three different answers.</p></div></div>
+    <div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>The data cannot tell you why someone left</h2><p>Ten participants are missing from the chart below. The numbers that remain look the same whatever the reason those ten had for leaving. But the reason decides what you can do about it.</p><p>Three kinds of reason, three different answers.</p></div></div>
     <div class="charts">${chartCard(allRight?'What you actually observe, with the losses that could depend on the outcome filled in':'What you actually observe',subs,{after:true,flag:allRight})}</div>
     <div class="card" style="margin:1rem 0"><table><thead><tr><th>Why they left</th><th>Name</th><th>What you can do</th></tr></thead><tbody>
       <tr><td class="txt">For reasons unrelated to the study, such as moving away</td><td>${term('MCAR')}</td><td class="txt">Nothing to fix. Analyze the people who stayed.</td></tr>
