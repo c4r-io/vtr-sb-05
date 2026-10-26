@@ -71,7 +71,7 @@ p{margin:0 0 .75rem}
 .resp.you .band{background:var(--accent)}
 .resp .body{flex:1;min-width:0;padding:1rem;white-space:pre-wrap;font-size:0.875rem;line-height:1.5}
 .th-help{display:inline-flex;align-items:center;gap:.4rem;position:relative;text-transform:none;letter-spacing:0}
-.th-help::before{content:"Your call";text-transform:uppercase;letter-spacing:.04em}
+.th-help::before{content:"Decision";text-transform:uppercase;letter-spacing:.04em}
 .help-icon{display:inline-flex;border:0;font-weight:400;cursor:help;color:inherit;vertical-align:middle;text-decoration:none}
 .help-icon svg{width:16px;height:16px}
 .help-icon:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:50%}
@@ -187,6 +187,8 @@ tr.needs-change td:first-child{box-shadow:inset 4px 0 0 var(--warning)}
 .tk-card .badge{position:absolute;left:.65rem;top:1rem;width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;font-size:0.875rem;font-weight:700;display:flex;align-items:center;justify-content:center}
 .tk-card.lesson{padding-left:1rem;border-left:6px solid var(--drop)}
 .tk-card.lesson p{font-size:1rem}
+.tk-card.lesson ul{margin:0;padding-left:1.1rem}
+.tk-card.lesson li+li{margin-top:.35rem}
 .stat{font-family:var(--mono);font-size:0.875rem;color:var(--fg);font-variant-numeric:tabular-nums}
 .legend{display:flex;flex-wrap:wrap;gap:.5rem 1rem;font-size:0.75rem;color:var(--muted);margin-top:.75rem;padding-top:.6rem;border-top:1px solid var(--border)}
 .legend span{display:inline-flex;align-items:center;gap:.35rem}
@@ -306,7 +308,7 @@ const DATA={
     const c=s.filter(d=>d.arm==='control'),t=s.filter(d=>d.arm==='treatment');
     const MC=['Moved out of the area','Changed phone number; could not be reached'];
     const MAR='Could not manage the monthly visits; travel too difficult';
-    const MN=['Stopped attending. At a follow-up call, mentioned side effects. Side effects were not recorded in this trial.','Stopped attending. No reason given.'];
+    const MN=['Stopped attending. At a follow-up call, mentioned unexpected side effects.','Stopped attending. No reason given.'];
     let mc=0,mn=0;
     pickRandom(r,c,1).forEach(d=>{d.dropped=true;d.kind='MCAR';d.reason=MC[mc++%MC.length]});
     c.filter(d=>!d.dropped).sort((a,b)=>b.age-a.age).slice(0,1).forEach(d=>{d.dropped=true;d.kind='MAR';d.reason=MAR});
@@ -318,125 +320,132 @@ const DATA={
 const TIP={
   MCAR:'Missing completely at random: dropout is unrelated to anything about the subject or the study. The remaining sample is still a fair sample.',
   MAR:'Missing at random: dropout can be explained by variables you measured (age, baseline severity, site). Statistical adjustment using those variables can correct the bias.',
-  MNAR:'Missing not at random (also called NMAR): dropout depends on something you did not measure, often the outcome itself. No adjustment from the data alone can fix it. A sensitivity analysis explores how bad the bias could be.',
-  sens:'Sensitivity analysis: re-run the analysis under different assumptions about what the missing values might have been, and report how much the conclusion changes.',
-  cc:'Complete-case analysis: analyze only the subjects who finished the study, and ignore the dropouts.',
-  SD:'Standard deviation (SD): a measure of spread. Roughly two thirds of a group sit within one SD of its mean. A difference between means that is smaller than the spread within each group is weak evidence on its own.',
+  MNAR:'Missing not at random (also called NMAR): dropout depends on something you did not measure, often the outcome itself. No adjustment from the data alone can fix it. A sensitivity analysis explores how these measures can impact your data.',
+  sens:'Sensitivity analysis: re-run the analysis under different assumptions about what the missing values might have been and report how much the conclusion changes.',
+  cc:'Complete-case analysis: analyze only the subjects who finished the study and ignore the dropouts.',
+  SD:'Standard deviation (SD): quantifies the spread of individual values around the mean.',
   itt:'Intention to treat: analyze every subject in the group they were assigned to, whether or not they finished.',
 };
 const JARGON={
+  'neurite':'Neurite: any projection (axon or dendrite) that extends from a neuron.',
   'overconfluent':'Overconfluent: cells have grown so dense that they cover the whole well and pile up, which changes their behavior and makes them impossible to measure reliably.',
   'segment':'Segment: have the imaging software trace each neurite as a separate object. When neurites form a dense tangle the software cannot tell them apart, so the well cannot be measured.',
-  'imaging QC':'Imaging quality control (QC): a pre-set rule that rejects a well whose image cannot be measured reliably, for example because it is out of focus, too dense, or too sparse.',
+  'imaging QC':'Imaging quality control (QC): a pre-set rule that rejects a well whose image cannot be measured reliably, for example because it is out of focus, too dense, too sparse, or based on other rationale listed in a lab protocol.',
   'edge well':'Edge well: a well on the outer rim of the plate. Edge wells evaporate and warm unevenly, so many protocols exclude them by default.',
   'contaminated':'Contaminated: bacteria, yeast, or mold got into the culture, so the well is discarded.',
-  'malocclusion':'Malocclusion: misaligned teeth. Rodent incisors grow continuously, and when they do not meet properly the animal cannot eat and is excluded for welfare reasons.',
+  'MCAO':'MCAO: middle cerebral artery occlusion. A filament is threaded up the carotid artery to block the middle cerebral artery for a set time, producing an ischemic stroke.',
+  'malocclusion':'Malocclusion: misaligned teeth. Rodent incisors grow continuously and when they do not meet properly the animal cannot eat and is excluded for welfare reasons.',
   'humane endpoint':'Humane endpoint: a pre-set point, such as weight loss or distress, at which an animal is removed from the study to prevent suffering.',
-  'vehicle':'Vehicle: the solution the drug or compound is dissolved in, given on its own so the control group goes through the same handling.',
+  'vehicle':'Vehicle: the solution the drug or compound is dissolved in, given on its own so the control group goes through the same procedure with an inactive solution.',
   'placebo':'Placebo: an inactive treatment made to look identical to the real one, so participants and staff cannot tell the groups apart.',
 };
 let SEEN=new Set();
 function J(text){let out=text;for(const [k,v] of Object.entries(JARGON)){if(SEEN.has(k))continue;const re=new RegExp('\\b'+k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i');if(re.test(out)){SEEN.add(k);out=out.replace(re,m=>`<span class="term" tabindex="0" data-tip="${v}">${m}</span>`)}}return out}
-function term(key,label){if(SEEN.has('tip:'+key))return label||key;SEEN.add('tip:'+key);return `<span class="term" tabindex="0" data-tip="${TIP[key]}">${label||key}</span>`}
+function term(key,label,text){if(SEEN.has('tip:'+key))return label||key;SEEN.add('tip:'+key);return `<span class="term" tabindex="0" data-tip="${text||TIP[key]}">${label||key}</span>`}
 
 const PATHS={
-  cells:{eyebrow:'In vitro',title:'Cells',sub:'Neurons in culture treated with Compound X',facts:['24 wells per condition','Outcome: neurite length at day 7','Loss: contamination, failed cultures, imaging QC failures'],
+  cells:{eyebrow:'In vitro',title:'Cells',sub:'Investigation of whether treatment with Compound X promotes neurite outgrowth',pop:'samples',tx:'treatment',
     summary:'Does Compound X promote neurite outgrowth? 24 wells per condition, neurite length measured at day 7.',
     unit:'wells',subject:'well',arms:['Vehicle','Compound X'],outcome:'Neurite length (µm, scaled 0 to 100)',
-    goal:'Test whether Compound X promotes neurite outgrowth in cultured neurons.',method:'Twenty-four wells get vehicle and twenty-four get Compound X. At day 7 every well is imaged and neurite length is measured.',
-    attrition:'Over the week, some wells are lost. Two vehicle wells are discarded, one contaminated and one that never took. Eight Compound X wells are dropped: seven fail imaging QC because the neurite network is too dense to segment or the well is flagged as overconfluent, and one is an edge well excluded by protocol.',
-    twist:'Compound X works, and in the wells where it worked best the neurites grew into dense networks that the imaging pipeline could not segment. Those are the wells that failed QC. The treated wells that survive are the ones where the compound did least.',
-    conclude:{q:'A reader sees only the result after the QC exclusions. What are they most likely to conclude?',opts:['Compound X is toxic to cultured neurons','Compound X has little or no effect on outgrowth','Compound X is a strong promoter of neurite outgrowth'],ans:1,
-      why:'The post-exclusion result shows a small gap that is well inside the spread of either condition. The true effect is large, and the strong responders that would have shown it are the wells QC removed.'},
-    redesign:{q:'Which change would best protect this result from attrition bias?',opts:['Treat every sample the same: identical handling, plating, imaging schedule, and pre-specified QC rules for every condition, with extra replicate wells planned to absorb expected loss','Lower the QC threshold so fewer wells are excluded','Image only the healthiest-looking wells','Run the treated wells on a separate day with extra care'],ans:0,
-      why:'Loss is only harmless when it falls evenly. Identical handling and QC rules for every condition keep the loss from tracking the treatment, and planning extra replicates means the loss you still get does not leave you short. Loosening QC or hand-picking wells hides the problem instead.'},
-    lessons:['A reasonable QC rule still biases a result when failures are more common in one condition.','Attrition bias can hide a real effect as easily as it can invent one. A QC rule that removes the best-responding wells makes a treatment that works look like one that does not.','Once a loss could be related to treatment, ask whether you recorded why. A well that failed QC for a logged reason, like a confluence score, can be accounted for. A well dropped with no note cannot, so say how much the missing wells could change the result.'],
-    prevent:[{t:'Treat every sample the same',d:'The same handling, plating, imaging schedule, and QC rules for every condition.'},{t:'Plan for loss',d:'Add replicate wells or plates to absorb the loss you expect.'},{t:'Pre-specify QC',d:'Decide the exclusion criteria before you see any results, and record every exclusion with its reason.'}]},
-  mice:{eyebrow:'Preclinical',title:'Mice',sub:'Motor recovery after an induced stroke',facts:['16 animals per arm','Outcome: motor score at day 28','Loss: deaths, failed surgery, health exclusions'],
+    goal:'Test whether Compound X promotes neurite outgrowth in cultured neurons.',method:'Twenty-four wells get vehicle solution and twenty-four get Compound X. At day 7 every well is imaged and neurite length is measured.',
+    attrition:{intro:'Throughout the week, some wells are lost.',
+      items:['Two vehicle wells are discarded: one was contaminated and one failed to culture.','Eight Compound X wells are dropped: seven fail imaging QC because the neurite network is too dense to segment or the well is flagged as overconfluent, and one is an edge well, which is excluded per the protocol.'],
+      after:'The chart below shows the results you actually got, from the included wells. The wells that were excluded are drawn as hollow orange dots so you can see where they would have been. To see how the results would have looked without any attrition, click the drawer underneath this chart.'},
+    twist:'Compound X works and in the wells where it worked best the neurites grew into dense networks that the imaging pipeline could not segment. Those are the wells that failed QC and needed to be dropped out, as they didn\'t meet the pre-specified criteria. The treated wells that survive are the ones where the compound did least.',
+    twistAfter:'Check out the graph: the filled orange dots are the losses that could depend on the treatment. {t} of {n} are in the Compound X group and they had the most growth.',
+    conclude:{q:'You are reviewing this study for a journal. The authors report only the chart on the right. What would you conclude from it?',opts:['Compound X suppresses neurite growth','Compound X has little or no effect on outgrowth','Compound X is a strong promoter of neurite outgrowth'],ans:1,
+      why:'After the dropout, there are not huge differences between groups. Notice that most of the data excluded were those with the greatest effect, removed for not meeting QC specifications. If those were included, the effect would be larger.'},
+    lessons:['A reasonable QC rule can still bias a result when exclusions are more common in one condition.','Attrition bias can hide a real effect as easily as it can invent one. A QC rule that removes the best-responding wells makes a treatment that works look like one that does not.','Once a loss could be related to treatment, ask whether you recorded why. A well that failed QC for a logged reason, like a confluence score, can be accounted for. A well dropped with no note cannot, so say how much the missing wells could change the result.'],
+    prevent:[{t:'Treat every sample the same',d:'The same handling, plating, imaging schedule, and QC rules for every condition.'},{t:'Plan for loss',d:'Add replicate wells or plates to absorb the loss you expect.'},{t:'Pre-specify QC',d:'Decide the exclusion criteria before you see any results and note if the QC criteria are inadequate for your data.'},{t:'Record every exclusion with its reason',d:'Log the reason for every loss so that uneven attrition is visible and can be accounted for.'}],
+    done:'You watched a reasonable QC rule remove the wells where the compound worked best, saw a clear effect shrink to almost nothing, and traced the shrink back to the exclusion log. Here, you found that dropout can sometimes occur due to pre-specified rules in your protocol. It\'s your responsibility to check and confirm that all exclusions make sense and are justified so that they do not result in biased data.'},
+  mice:{eyebrow:'Preclinical',title:'Mice',sub:'Investigation of whether a drug can facilitate motor recovery after an induced stroke',pop:'animals',tx:'drug',
     summary:'Does the drug improve motor recovery after stroke? 16 mice per group, motor score measured at day 28.',
     unit:'animals',subject:'animal',arms:['Vehicle','Drug'],outcome:'Motor score at day 28 (0 to 100)',
-    goal:'Test whether a drug improves motor recovery after an induced stroke.',method:'Sixteen mice get vehicle and sixteen get the drug. At day 28 every surviving animal is scored on a motor task.',
-    attrition:'Over four weeks, some animals are lost. Two vehicle animals are excluded, one for malocclusion and one after a failed surgery. Five drug animals are lost: two die before day 28, two reach a humane endpoint early, and one has a failed surgery.',
-    twist:'The drug has a cardiac side effect. The animals it affected most were also the ones recovering worst, and those are the animals that died or reached a humane endpoint. The drug animals that reach day 28 are the ones that tolerated it.',
-    conclude:{q:'A reader sees only the day 28 result among surviving animals. What are they most likely to conclude?',opts:['The drug substantially improves motor recovery','The drug has a dangerous side effect','The drug helps recovery only slightly'],ans:0,
-      why:'The survivor-only result shows a large gap between groups. The true gap is small, and the side effect that removed the worst-recovering drug animals never appears in the final figure.'},
-    redesign:{q:'Which change would best protect this result from attrition bias?',opts:['Score animals earlier, before any have died','Exclude the same number of animals from each group','Give the drug group extra veterinary care so fewer are lost','Account for expected attrition in the sample size calculation, and treat every animal the same regardless of group'],ans:3,
-      why:'Planning for attrition keeps the study powered when animals are lost. Treating every animal the same, in housing, handling, monitoring, and the criteria for exclusion, keeps the loss from tracking the treatment. Matching counts or giving one group extra care creates a new difference between groups.'},
-    lessons:['Deaths, humane endpoints, and health exclusions are not neutral when they happen more in one group.','A side effect that removes the sickest animals looks, among survivors, like a treatment that works.','Once a loss could be related to treatment, ask whether you recorded anything that explains it. A humane endpoint tied to a measured side effect, like weight loss, can be accounted for in the analysis. A death with nothing in the record cannot, so report how much it could change the result.'],
-    prevent:[{t:'Account for attrition in the sample size',d:'Build the loss you expect into the calculation so attrition does not leave the study underpowered.'},{t:'Treat all animals the same',d:'The same housing, handling, monitoring, and exclusion criteria for every group.'}]},
-  humans:{eyebrow:'Clinical',title:'Humans',sub:'A 12-week trial of a new drug for chronic pain',facts:['20 participants per group','Outcome: pain relief at 12 weeks','Loss: moved, missed visits, stopped attending'],
+    goal:'Test whether a drug improves motor recovery after an induced stroke.',method:'All mice undergo a stroke, induced by transient occlusion of the middle cerebral artery (MCAO). After surgery, sixteen mice get vehicle and sixteen get the drug. At day 28 every surviving animal is scored on a motor task.',
+    attrition:{intro:'Over four weeks, some animals drop out.',
+      items:['Two vehicle animals drop out: one for malocclusion and one after a failed surgery.','Five drug animals are lost: two die before day 28, two reach a humane endpoint early, and one has a failed surgery.'],
+      after:'The chart below shows the results you actually got, from the animals that completed the study. The animals that were excluded are drawn as hollow orange dots so you can see where they would have been. To see how the results would have looked without any attrition, click the drawer underneath this chart.'},
+    twist:'The animals affected most by the drug were also the ones recovering worst and those are the animals that died or reached a humane endpoint. The drug animals that reach day 28 are the ones that tolerated it.',
+    twistAfter:'Check out the graph: the filled orange dots on the chart are the losses that could be related to treatment. {t} of {n} are in the Drug group and they were recovering the worst.',
+    conclude:{q:'You are reviewing this study for a journal. The authors report only the chart on the right. What would you conclude from it?',opts:['The drug substantially improves motor recovery','The drug has no effect on recovery','The drug helps recovery only slightly'],ans:0,
+      why:'The survivor-only result shows a large gap between groups. The true gap is small and the side effect that removed the worst-recovering drug animals never appears in the final figure. Without noting or accounting for these data, the figure misleads the reader.'},
+    lessons:['Deaths, humane endpoints, and health exclusions may not be by chance when they are affecting only one group.','A side effect that removes the animals that are recovering worst can skew the results so that it looks like those that survived had a successful treatment.','Once a loss could be related to treatment, ask whether you recorded anything that explains it. A humane endpoint tied to a measured side effect, like weight loss, can be accounted for in the analysis. Detailed notes can impact your results and future studies!'],
+    prevent:[{t:'Account for attrition in the sample size',d:'Build the loss you expect into the calculation so attrition does not leave the study underpowered.'},{t:'Treat all animals the same',d:'The same housing, handling, monitoring, and exclusion criteria for every group.'},{t:'Record every exclusion with its reason',d:'Log the reason for every loss so that uneven attrition is visible and can be accounted for.'}],
+    done:'You identified how excluding subjects who may have been impacted by an unintended side effect causes the results to drift from a modest to a large effect and tracked this down with help from your exclusion log. It\'s your responsibility to check and confirm that all exclusions make sense and are justified so that they do not result in biased data.'},
+  humans:{eyebrow:'Clinical',title:'Humans',sub:'Investigation to see if a new drug alleviates chronic pain',pop:'participants',tx:'drug',
     summary:'Does the drug relieve chronic pain better than placebo? 20 participants per group, pain relief reported at week 12.',
     unit:'participants',subject:'participant',arms:['Placebo','Drug'],outcome:'Pain relief at 12 weeks (0 to 100)',
     goal:'Test whether a new drug relieves chronic pain better than placebo over 12 weeks.',method:'Twenty participants get placebo and twenty get the drug. At week 12 everyone still enrolled reports their pain relief.',
-    attrition:'Over 12 weeks, ten participants leave: two from the placebo group and eight from the drug group. Each one has a short note in the trial file, and the notes differ.',
+    attrition:{intro:'Over 12 weeks, ten participants leave for different reasons:',
+      items:['Two from the placebo group','Eight from the drug group'],
+      after:'The chart below shows the results you actually got, from the participants who completed the study. The participants who were excluded are drawn as hollow orange dots so you can see where they would have been. To see how the results would have looked without any attrition, click the drawer underneath this chart.'},
     twist:'The drug participants who left were the ones with the worst side effects, and side effects were never recorded. The drug participants who finished are the ones who tolerated it.',
-    conclude:{q:'A reader sees only the week 12 result among participants who finished. What are they most likely to conclude?',opts:['The drug is only marginally better than placebo','The drug relieves pain far better than placebo','The drug causes side effects that push people out of the trial'],ans:1,
-      why:'The survivor-only result shows a large gap. The true gap is modest, and the side effects that drove dropout were never measured, so nothing in the dataset points to them.'},
-    redesign:{q:'Which change would best protect this trial from attrition bias?',opts:['Analyze only participants who completed all 12 weeks','Replace each dropout with a new participant partway through','Minimize the burden of long-term participation, recruit more participants than you need, and apply retention lessons from similar studies','Pay participants in the drug group more so fewer of them leave'],ans:2,
-      why:'Fewer people leave when staying is easy, and planning for the attrition rate seen in similar studies keeps the trial powered when some still do. Analyzing completers only is the bias itself, and replacements or unequal incentives add new differences between groups.'},
-    lessons:['Dropout unrelated to anything (MCAR) barely moves the result. Dropout tied to a variable you recorded (MAR) can be adjusted for. Dropout tied to something you did not record (MNAR) cannot, so use a sensitivity analysis.','You cannot tell MAR from MNAR by looking at the data. Record why people leave while you still can.'],
-    prevent:[{t:'Minimize the burden of participation',d:'Make staying in the study easy: fewer visits, remote check-ins, flexible scheduling.'},{t:'Recruit more than you need',d:'Size the sample for the attrition rate seen in similar studies.'},{t:'Apply lessons from other studies',d:'Know the typical attrition in your population and what has kept people enrolled.'}]},
+    conclude:{q:'You are reviewing this study for a journal. The authors report only the chart on the right. What would you conclude from it?',opts:['The drug is only marginally better than placebo','The drug relieves pain far better than placebo','The drug makes pain worse compared to placebo'],ans:1,
+      why:'The survivor-only result shows a large gap between groups. The true gap is modest. Without noting or accounting for these data, the figure misleads the reader.'},
+    lessons:[['Dropout unrelated to anything (MCAR) barely moves the result.','Dropout tied to a variable you recorded (MAR) can be adjusted for.','Dropout tied to something you did not record (MNAR) cannot, so use a sensitivity analysis.'],'You cannot tell MAR from MNAR by looking at the data. Record why people leave while you still can.'],
+    prevent:[{t:'Minimize the burden of participation',d:'Make staying in the study easy: fewer visits, remote check-ins, flexible scheduling.'},{t:'Recruit more than you need',d:'Size the sample for the attrition rate seen in similar studies.'},{t:'Apply lessons from other studies',d:'Know the typical attrition in your population and what has kept people enrolled.'},{t:'Record every exclusion with its reason',d:'Log the reason for every loss so that uneven attrition is visible and can be accounted for.'}],
+    done:'You saw how participant dropout can cause the results to change and tracked this down with help from your exclusion log. It\'s your responsibility to check and confirm that all exclusions make sense and are justified so that they do not result in biased data.'},
 };
 
 const DQ={
   cells:{
     ideal:{
-      q1:{q:'Read the result, including the spread. What can you say about Compound X?',opts:['It has no effect: most treated wells sit with the vehicle wells','It lowers outgrowth','It raises outgrowth, and the treated wells spread far wider than vehicle because a cluster of wells responded strongly','Nothing: the two conditions overlap too much to tell apart'],ans:2,
-        why:'The Compound X mean is well above vehicle, and the treated SD is about double the vehicle SD. That extra spread is a cluster of strong responders at the high end. The gap and the spread together say the compound did something in a subset of wells.'},
-      q2:{q:'Suppose a handful of wells were thrown out before imaging. Would this figure have to change?',opts:['Not if the discarded wells are typical of their condition','Yes, any loss of wells changes the result','Only if more than half the plate is lost'],ans:0,
-        why:'Discarding wells that are typical of their condition leaves the means and spread roughly where they are. Discarding wells that are not typical, say the strongest responders in one condition, drags the mean of what is left.'}},
+      q1:{q:'From the results presented, what conclusions can you make about Compound X?',opts:['It has no effect. There is not a big enough difference to draw conclusions from these data','It suppresses outgrowth in the treated cells','It promotes outgrowth in the treated wells, which seems to be driven by a cluster of samples'],ans:2,
+        why:'The Compound X mean is higher than the vehicle mean, and the treated SD is about double the vehicle SD. That variance is driven by a cluster of strong responders at the high end. Taken together, the treatment seems to have an effect, with a potentially stronger effect in some samples.'},
+      q2:{q:'Suppose some of the wells need to be excluded before imaging. Would the results from this figure change?',opts:['It depends on which wells are excluded','Yes, any loss of wells changes the result','Only if more than half the plate is lost'],ans:0,
+        why:'It depends on which wells are lost. For example, if most of the excluded wells are the higher values of the treated sample then the results can look very different from what we see here.'}},
     obs:{
-      q1:(b,a)=>({q:'Compared with the no-attrition figure, the difference between means you see now is:',opts:['Larger','About the same','Smaller'],ans:a.diff-b.diff>2?0:a.diff-b.diff<-2?2:1,
-        why:`The difference went from ${b.diff.toFixed(1)} to ${a.diff.toFixed(1)}, and it now sits well inside the spread of either condition. Same plate, same wells, different answer, because of which wells were dropped.`}),
-      q2:{q:'Look at the hollow orange dots. Which wells were lost?',opts:['Mostly the lowest-outgrowth Compound X wells','A random scatter from both conditions','Mostly the highest-outgrowth Compound X wells'],ans:2,
-        why:'Eight of the ten lost wells were treated, and they were the wells with the longest neurites, the strong responders. Dropping them pulls the Compound X mean down toward vehicle and shrinks both the gap and the spread.'}}},
+      q1:(b,a)=>({q:'Compared to the figure without attrition, how did the difference between means change?',opts:['Larger','About the same','Smaller'],ans:a.diff-b.diff>2?0:a.diff-b.diff<-2?2:1,
+        why:`The mean difference went from ${b.diff.toFixed(1)} to ${a.diff.toFixed(1)}, and it now sits well inside the spread of either condition. The data shift to give a different answer than before due to the data points that dropped out.`}),
+      q2:{q:'Look at the hollow orange dots. Which wells dropped out?',opts:['Mostly the lowest Compound X wells','A random scatter from both conditions','Mostly the highest Compound X wells'],ans:2,
+        why:'Eight of the ten lost wells were treated and they were the wells with the most neurite growth. Dropping them pulls the Compound X mean down toward vehicle and shrinks the SD.'}}},
   mice:{
     ideal:{
-      q1:{q:'Read the result, including the spread. What can you say about the drug?',opts:['It clearly helps: the drug mean is higher','It harms recovery','It has no effect: the dots overlap','The means differ slightly, but the spread within each group is wider than that gap, so the evidence for an effect is weak'],ans:3,
-        why:'The drug mean is a little higher than vehicle, but the SD within each group is larger than the gap between them. A small effect at most, and the overlap means this result alone cannot settle it.'},
-      q2:{q:'If a few animals never reach day 28, does the result have to move?',opts:['Yes, every lost animal shifts the mean','No, as long as the animals lost resemble the ones that survive','No, losing animals never affects a mean'],ans:1,
-        why:'Losing animals that resemble the survivors leaves the group mean and spread about where they were. Losing animals that differ, say the ones recovering worst in one group, moves them.'}},
+      q1:{q:'From the results presented, what conclusions can you make about the effects of the drug on motor recovery?',opts:['It has a large effect','It makes recovery worse','It has no effect','It\'s slightly effective'],ans:3,
+        why:'The drug mean is slightly higher than vehicle, but the SD within each group is larger than the gap between them. The effect is small and the overlapping data points don\'t give us conclusive evidence on whether or not this drug is effective.'},
+      q2:{q:'If a few animals are excluded, would the results shift?',opts:['Yes, every lost animal shifts the mean','It depends on which animals are lost','No, losing animals never affects a mean'],ans:1,
+        why:'Losing animals that have similar values in each group means that the results won\'t shift substantially.'}},
     obs:{
-      q1:(b,a)=>({q:'Compared with the no-attrition figure, the difference between means you see now is:',opts:['About the same','Smaller','Larger'],ans:a.diff-b.diff>2?2:a.diff-b.diff<-2?1:0,
-        why:`The difference went from ${b.diff.toFixed(1)} to ${a.diff.toFixed(1)}, and the drug group's spread shrank with it. Same animals, same scores, different answer, because of who survived to be scored.`}),
+      q1:(b,a)=>({q:'Compared to the figure without attrition, how did the difference between means change?',opts:['About the same','Smaller','Larger'],ans:a.diff-b.diff>2?2:a.diff-b.diff<-2?1:0,
+        why:`The difference went from ${b.diff.toFixed(1)} to ${a.diff.toFixed(1)}, and the drug group's spread shrank with it. The data shift to give a different answer than before due to the data points that dropped out.`}),
       q2:{q:'Look at the hollow orange dots. Which animals were lost?',opts:['The best-recovering vehicle animals','An even mix across both groups','The worst-recovering drug animals'],ans:2,
-        why:'Five of the seven losses were drug animals, and they were the ones with the lowest motor scores. Removing them lifts the drug mean, tightens its spread, and inflates the gap.'}}},
+        why:'Five of the seven losses were drug animals and they were the ones with the lowest motor scores. Removing them lifts the drug mean, reduces variability, and increases the difference between the two groups.'}}},
   humans:{
     ideal:{
-      q1:{q:'Read the result, including the spread. What can you say about the drug?',opts:['It is slightly better than placebo on average, but the spread within each group is wider than the gap, so the evidence is weak','It is much better than placebo','The two groups are identical','It is worse than placebo'],ans:0,
-        why:'The drug mean is a little above placebo, but the SD within each group is larger than the gap between them. A modest difference with heavy overlap is not, on its own, a claim you could make.'},
-      q2:{q:'If some participants dropped out before week 12, could the week 12 result be misleading?',opts:['Only if dropout is heavy in both groups','It could, if the people who leave differ from the people who stay','No, because the group means are what they are'],ans:1,
-        why:'Dropout that is a random slice of each group changes little. Dropout concentrated among, say, the drug participants who were doing worst pulls that group mean up and narrows its spread.'}},
+      q1:{q:'From the results presented, what conclusions can you make about the effects of the drug on chronic pain?',opts:['It is slightly better than placebo on average','It is much better than placebo','There\'s no difference between groups','It is worse than placebo'],ans:0,
+        why:'The drug mean is a little above placebo, but the SD within each group is large. The drug only made a modest difference that may not be meaningful given the spread.'},
+      q2:{q:'If some participants dropped out before week 12, would the results shift?',opts:['Only if there is a lot of dropout in both groups','It could, if the responses from those who left differ from those who stay','Not substantially, since the groups are large'],ans:1,
+        why:'Random dropout, even if it is uneven across groups, mostly costs you power rather than shifting the means. The result shifts when the people who leave differ from the people who stay, for example if the drug participants who were doing worst are the ones who drop out.'}},
     obs:{
-      q1:(b,a)=>({q:'Compared with the no-attrition figure, the difference between means you see now is:',opts:['Smaller','Larger','About the same'],ans:a.diff-b.diff>2?1:a.diff-b.diff<-2?0:2,
-        why:`The difference went from ${b.diff.toFixed(1)} to ${a.diff.toFixed(1)}. Same trial, same participants, different answer, because of who is missing.`}),
-      q2:{q:'Look at the hollow orange dots. Who left the trial?',opts:['A random mix of people from both groups','Mostly placebo participants with high relief','Mostly drug participants with low relief'],ans:2,
-        why:'Eight of the ten who left were in the drug group, and they reported the least relief. Removing them raises the drug mean and inflates the difference.'}}},
+      q1:(b,a)=>({q:'Compared to the figure without attrition, how did the difference between means change?',opts:['Smaller','Larger','About the same'],ans:a.diff-b.diff>2?1:a.diff-b.diff<-2?0:2,
+        why:`The difference went from ${b.diff.toFixed(1)} to ${a.diff.toFixed(1)}. The data shift to give a different answer than before due to the data points that dropped out.`}),
+      q2:{q:'Look at the hollow orange dots. Which participants left the trial?',opts:['A random mix of people from both groups','Mostly placebo participants with high relief','Mostly drug participants with low relief'],ans:2,
+        why:'Eight of the ten who left were in the drug group and they reported the least relief. Removing these participants raises the drug mean and inflates the difference.'}}},
 };
 const MULTI={
   cells:{q:'Which of these would protect this experiment from attrition bias? Select all that apply.',
-    opts:[{t:'Treat every sample the same: identical handling, plating, imaging schedule, and pre-specified QC rules for every condition',ok:true,why:'Identical handling and QC rules keep the loss from tracking the treatment.'},
-      {t:'Plan extra replicate wells or plates to absorb the loss you expect',ok:true,why:'Planned replicates mean the loss you still get does not leave you short.'},
-      {t:'Decide the QC criteria before seeing any results, and record every exclusion with its reason',ok:true,why:'Pre-specified criteria cannot bend toward the result, and a logged reason makes uneven loss visible.'},
-      {t:'Lower the QC threshold so fewer wells are excluded',ok:false,why:'Fewer exclusions does not make the remaining ones even. The loss still tracks the treatment, and you now keep bad images too.'},
-      {t:'Image only the healthiest-looking wells',ok:false,why:'Hand-picking wells is selection on the outcome. It builds the bias in deliberately.'},
+    opts:[{t:'Treat every sample the same: identical handling, plating, imaging schedule, etc',ok:true,why:'Identical handling standardizes the assay and should help reduce variability.'},
+      {t:'Plan extra replicate wells or plates to account for any loss you expect to see',ok:true,why:'Planned replicates help account for any losses so that you are not left short.'},
+      {t:'Decide the QC criteria before seeing any results and record every exclusion with its reason',ok:true,why:'Pre-specified criteria are unbiased and notes help you understand and remember why the exclusion occurred.'},
+      {t:'Adjust the QC threshold so fewer wells are excluded',ok:false,why:'Fewer exclusions do not even out the exclusions between groups and the results stay biased.'},
+      {t:'Image only the best-looking wells',ok:false,why:'Hand-picking wells is unethical and deliberately biases the results.'},
       {t:'Run the treated wells on a separate day with extra care',ok:false,why:'Handling one condition differently adds a new difference between conditions.'}],
-    why:'Loss is only harmless when it falls evenly. Identical handling, planned replicates, and pre-specified QC keep the loss from tracking the treatment and keep you from running short when it happens.'},
+    why:'Identical handling, planned replicates, and pre-specified QC help mitigate attrition that could occur.'},
   mice:{q:'Which of these would protect this study from attrition bias? Select all that apply.',
     opts:[{t:'Account for expected attrition in the sample size calculation',ok:true,why:'Planning for the loss keeps the study powered when animals are lost.'},
-      {t:'Treat every animal the same: housing, handling, monitoring, and exclusion criteria',ok:true,why:'The same rules for every group keep the loss from tracking the treatment.'},
-      {t:'Exclude the same number of animals from each group',ok:false,why:'Matching counts removes healthy animals from one group to balance sick ones lost from the other. The groups are still not comparable.'},
+      {t:'Treat every animal the same: housing, handling, monitoring, and exclusion criteria',ok:true,why:'The same standards for every group should help reduce variability and loss.'},
+      {t:'Exclude the same number of animals from each group',ok:false,why:'Matching counts removes healthy animals from one group to balance sick ones lost from the other. The groups would still not be comparable.'},
       {t:'Score animals earlier, before any have died',ok:false,why:'Changing the endpoint to dodge the loss answers a different question than the one the study was designed for.'},
-      {t:'Give the drug group extra veterinary care so fewer are lost',ok:false,why:'Extra care for one group adds a new difference between groups.'}],
-    why:'Planning for attrition keeps the study powered when animals are lost, and treating every animal the same keeps the loss from tracking the treatment.'},
+      {t:'Give the drug group extra veterinary care so fewer are lost',ok:false,why:'Extra care for one group adds a new variable that could cause a difference between groups.'}],
+    why:'Planning for attrition keeps the study powered when animals are lost and treating every animal the same helps reduce variability and loss.'},
   humans:{q:'Which of these would protect this trial from attrition bias? Select all that apply.',
     opts:[{t:'Minimize the burden of long-term participation',ok:true,why:'Fewer people leave when staying is easy.'},
       {t:'Recruit more participants than you need, based on attrition in similar studies',ok:true,why:'Planning for the attrition seen in similar trials keeps the study powered when some still leave.'},
       {t:'Apply retention lessons learned from other studies in this population',ok:true,why:'Knowing what has kept people enrolled before lets you build it in from the start.'},
-      {t:'Analyze only participants who completed all 12 weeks',ok:false,why:'That is the bias itself. The completers are the sample attrition left you.'},
-      {t:'Replace each dropout with a new participant partway through',ok:false,why:'A replacement is not the person who left. The people who leave still differ from the people who stay.'},
-      {t:'Pay participants in the drug group more so fewer of them leave',ok:false,why:'Unequal incentives add a new difference between groups.'}],
-    why:'Fewer people leave when staying is easy, and planning for the attrition seen in similar trials keeps the study powered when some still do.'},
+      {t:'Analyze only participants who completed all 12 weeks',ok:false,why:'This group isn\'t representative of the entire population that you tested.'},
+      {t:'Replace each dropout with a new participant partway through',ok:false,why:'A replacement is not the person who left and exposure could differ. The people who leave still differ from the people who stay.'},
+      {t:'Pay participants in the drug group more so fewer of them leave',ok:false,why:'Unequal incentives are unfair and unethical.'}],
+    why:'Fewer people leave when staying is easy and planning for the attrition seen in similar trials keeps the study powered when some still do.'},
 };
 /* ---------- state ---------- */
 const S={path:null,step:0,
@@ -477,13 +486,13 @@ function dotPlot(subs,opts){
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Dot plot of ${P.outcome} by group">${g}</svg>`;
 }
 function chartCard(title,subs,opts){const P=PATHS[S.path];const after=opts&&opts.after;const st=stats(subs,after);const total=subs.length;const kept=st.nc+st.nt;
-  const sub=after?`The real result: only the ${kept} of ${total} ${P.unit} that stayed in the study.`:`This is the result if every ${P.subject} stayed in and was measured at the end.`;
+  const sub=after?`The real result, where only ${kept} of ${total} ${P.unit} stayed in the study.`:`This is the result if every ${P.subject} completed the study.`;
   const tbl=`<table class="stat-tbl"><thead><tr><th>Group</th><th>n</th><th>Mean</th><th>SD</th></tr></thead><tbody>
     <tr><td><i style="background:var(--control)"></i>${P.arms[0]}</td><td>${st.nc}</td><td>${st.mc.toFixed(1)}</td><td>${st.sc.toFixed(1)}</td></tr>
     <tr><td><i style="background:var(--treat)"></i>${P.arms[1]}</td><td>${st.nt}</td><td>${st.mt.toFixed(1)}</td><td>${st.st.toFixed(1)}</td></tr>
     <tr class="diff"><td colspan="2">Difference</td><td>${st.diff>=0?'+':''}${st.diff.toFixed(1)}</td><td></td></tr></tbody></table>`;
   return `<div class="chart card"><h4>${title}</h4><div class="small muted" style="margin-bottom:.25rem">${sub} ${P.outcome}.</div><div class="chart-row${opts&&opts.stack?' stacked':''}"><div class="plot">${dotPlot(subs,opts)}</div>${tbl}</div>${legend(!!(opts&&opts.flag),!!after)}</div>`}
-function legend(flag,dropped){if(dropped===undefined)dropped=true;const P=PATHS[S.path];return `<div class="legend"><span><i style="background:var(--control)"></i>${P.arms[0]} group</span><span><i style="background:var(--treat)"></i>${P.arms[1]} group</span>${dropped?`<span><i style="border:2px solid var(--drop);background:#fff"></i>Dropped out, shown at its true value</span>`:''}${flag?`<span><i style="background:var(--drop)"></i>Loss that could be related to treatment</span>`:''}</div><p class="small muted chart-note">Each dot is one ${P.subject}. Bar = group mean, band = one ${term('SD','SD')} either side.${dropped?` Hollow orange dots = ${P.unit} that dropped out, drawn at their true value.`:''}</p>`}
+function legend(flag,dropped){if(dropped===undefined)dropped=true;const P=PATHS[S.path];const tv=`The exact value that would have been measured if this ${P.subject} had completed the study.`;return `<div class="legend"><span><i style="background:var(--control)"></i>${P.arms[0]} group</span><span><i style="background:var(--treat)"></i>${P.arms[1]} group</span>${dropped?`<span><i style="border:2px solid var(--drop);background:#fff"></i>Dropped out, shown at its ${term('truev','true value',tv)}</span>`:''}${flag?`<span><i style="background:var(--drop)"></i>Loss that could be related to treatment</span>`:''}</div><p class="small muted chart-note">Each dot is one ${P.subject}. Bar = group mean, shaded area = one ${term('SD','SD')} either side.${dropped?` Hollow orange dots = ${P.unit} that dropped out, drawn at their ${term('truev','true value',tv)}.`:''}</p>`}
 function shiftWord(before,after){const d=after.diff-before.diff;return d>2?'larger':d<-2?'smaller':'about the same'}
 
 /* ---------- pages ---------- */
@@ -508,22 +517,20 @@ const ICON={
   mice:'<svg viewBox="0 0 40 40"><path d="M6 24c0-7 6-12 14-12s14 5 14 12c0 4-3 6-7 6H13c-4 0-7-2-7-6z"/><circle cx="12" cy="12" r="4"/><circle cx="28" cy="12" r="4"/><circle cx="14" cy="23" r="1.2" fill="currentColor"/><circle cx="26" cy="23" r="1.2" fill="currentColor"/><path d="M34 26c3 1 4 4 2 7"/></svg>',
   humans:'<svg viewBox="0 0 40 40"><circle cx="20" cy="11" r="6"/><path d="M8 34c0-7 5-12 12-12s12 5 12 12"/></svg>',
 };
-const INTRO_STEPS=['Choose a subject type: cells, mice, or humans.','Read the result the study was designed to give, then see what dropout did to it.','Work out whether the ones who left differ from the ones who stayed, and what to do about it.'];
+const INTRO_STEPS=['Choose a research scenario: cells, mice, or humans.','Read the ideal results of the study as if no dropout had occurred, then see how dropout actually impacted the data.','Compare the data to see how those who dropped out differ from the sample that completed the study.','Identify how you can prevent these issues in future studies.'];
 const PAGES={
-  intro(){return `<div class="intro-accent"><h2>Let's see what happens to a result when subjects drop out.</h2><div class="body"><p style="margin:0">Long studies lose subjects. Cells die, animals reach endpoints, people stop coming to visits. That loss is attrition. Attrition bias is what happens when the ones you lose differ from the ones you keep: the sample at the end is no longer the sample you designed, and the result can drift away from the truth with no sign of it in the final figure.</p></div></div>
-    <div class="intro-panel"><h2>Your Goal</h2><p style="margin:0">In this activity, your goal is to <strong>see how attrition reshapes a result</strong> and to <strong>recognize when dropout is harmless and when it is not</strong>, so you can design and read studies with loss in mind.</p></div>
+  intro(){return `<div class="intro-accent"><h2>Let's see what happens when subjects drop out of a study.</h2><div class="body"><p>In studies where there are multiple measures across a long period of time, you lose subjects or samples. Participants stop following up, animals may get sick, and cells can become contaminated. This loss is called attrition.</p><p style="margin:0"><strong>Attrition bias</strong> is a type of selection bias where the sample you end with differs from the sample you started with due to dropout, contamination, unforeseen circumstances, etc. If not accounted for, the results can misrepresent your data and your sample.</p></div></div>
+    <div class="intro-panel"><h2>Your Goal</h2><p style="margin:0">In this activity, your goal is to <strong>identify how attrition can influence the interpretation of results</strong> and to <strong>recognize how to handle these types of situations</strong>.</p></div>
     <div class="intro-panel"><h2>What You're About To Do</h2><ol class="numbered">${INTRO_STEPS.map((t,i)=>`<li><span class="badge" aria-hidden="true">${i+1}</span><span>${t}</span></li>`).join('')}</ol></div>`},
-  congrats(){const P=PATHS[S.path];const sum=S.path==='humans'
-      ?'You watched ten participants leave a trial, sorted each one by why they left, and saw that only the dropout the trial never measured left a bias nothing in the data could fix.'
-      :S.path==='cells'?'You watched a reasonable QC rule remove the wells where the compound worked best, saw a clear effect shrink to almost nothing, and traced the shrink back to the exclusion log.':`You watched a reasonable exclusion rule remove the ${P.unit} that tolerated the treatment worst, saw the result drift from a modest effect to a large one, and traced the drift back to the exclusion log.`;
+  congrats(){const P=PATHS[S.path];const sum=P.done;
     return `<div class="congrats"><div class="ravens"><img src="assets/raven-a.svg" alt="Celebratory raven"><img src="assets/raven-b.svg" alt="Raven with party blower"><img src="assets/raven-c.svg" alt="Raven with stars"></div>
       <div class="intro-accent"><h2>Congratulations, you've completed the activity!</h2><div class="body"><p>${sum}</p>
       <div class="btns"><button class="footer-btn secondary" data-act="prevpage"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>Previous</button><button class="footer-btn secondary" data-act="restart"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>Restart</button><button class="footer-btn secondary" data-act="home"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Home</button></div></div></div></div>`},
-  choose(){return `<h2>Choose a subject type</h2><p class="lede">Pick the kind of study you know best.</p>
+  choose(){return `<h2>Choose a research scenario</h2><p class="lede">Pick the kind of study you have the most experience in.</p>
     <div class="choices">${Object.entries(PATHS).map(([k,P])=>`<button class="choice" aria-pressed="${S.path===k}" data-path="${k}"><div class="eyebrow">${P.eyebrow}</div><h3>${P.title}</h3><p>${P.sub}</p><span class="glyph" aria-hidden="true"></span></button>`).join('')}</div>`},
   ideal(){const P=PATHS[S.path],subs=S.path==='humans'?DATA.mnar:DATA[S.path],st=S.lab;
     const Q=DQ[S.path],i1=Q.ideal.q1,i2=Q.ideal.q2;
-    let h=`<div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>${P.summary.split('?')[0]}?</h2><p>[Placeholder for instructions]</p><dl class="study" style="margin:0"><dt>Goal</dt><dd>${P.goal}</dd><dt>Method</dt><dd>${J(P.method)}</dd></dl></div></div>`;
+    let h=`<div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>${P.summary.split('?')[0]}?</h2><p>Read the research goal, methods, and chart below. Then answer some questions about the data based on the results presented!</p><dl class="study" style="margin:0"><dt>Goal</dt><dd>${P.goal}</dd><dt>Method</dt><dd>${J(P.method)}</dd></dl></div></div>`;
     h+=`<div class="charts">${chartCard('The data without any attrition',subs,{after:false})}</div>`;
     h+=`<div class="card" style="margin-top:1rem">
       <p><strong>${i1.q}</strong></p>${optList('i1',i1.opts,st.ideal.q1,null,st.ideal.q1!=null,i1.ans)}${st.ideal.q1!=null?fb(st.ideal.q1===i1.ans,i1.why):''}
@@ -533,49 +540,49 @@ const PAGES={
   attrition(){const P=PATHS[S.path],subs=S.path==='humans'?DATA.mnar:DATA[S.path],st=S.lab;const b=stats(subs,false),a=stats(subs,true);
     const Q=DQ[S.path],o1=Q.obs.q1(b,a),o2=Q.obs.q2;
     const study=`<dl class="study" style="margin:0"><dt>Goal</dt><dd>${P.goal}</dd><dt>Method</dt><dd>${J(P.method)}</dd></dl>`;
-    let h=`<div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>Attrition happens</h2><p>${J(P.attrition)}</p><p>The chart below is now the result you actually get, from the ${P.unit} that remained. The ${P.unit} that were lost are drawn as hollow orange dots so you can see where they would have been. Open the drawer under the chart to look back at the data without any attrition.</p></div></div>
+    let h=`<div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>Let's see what happens with attrition</h2><p>${J(P.attrition.intro)}</p><ul class="tight">${P.attrition.items.map(t=>`<li>${J(t)}</li>`).join('')}</ul><p>${P.attrition.after}</p></div></div>
       <details class="prior" id="studyDetails" style="margin:0 0 1rem" ${st.studyOpen===true?'open':''}><summary><span>Study details</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg></span></summary><div class="content">${study}</div></details>`;
-    h+=`<div id="chartTop" class="charts">${chartCard('What you actually observe',subs,{after:true,anim:true})}</div>`;
+    h+=`<div id="chartTop" class="charts">${chartCard('The real data with attrition',subs,{after:true,anim:true})}</div>`;
     h+=`<details class="prior"><summary><span>View the data without any attrition</span><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg></span></summary><div class="content"><div class="charts">${chartCard('The data without any attrition',subs,{after:false})}</div></div></details>
       <div class="card" style="margin-top:1rem">
-      <p><strong>${o1.q}</strong></p>${optList('o1',o1.opts,st.obs.q1,null,st.obs.q1!=null,o1.ans)}${st.obs.q1==null?hintBlock('o1',`Look at the table beside each chart. Open the drawer above to see the difference between means in the data without any attrition, then compare it with the difference beside the chart you see now.`,!!st.hint):''}${st.obs.q1!=null?fb(st.obs.q1===o1.ans,o1.why):''}
+      <p><strong>${o1.q}</strong></p>${optList('o1',o1.opts,st.obs.q1,null,st.obs.q1!=null,o1.ans)}${st.obs.q1==null?hintBlock('o1',`Look at the table beside each chart to view the statistical results from this dataset. Open the drawer labeled "View the data without any attrition" to see the difference between means in the data without any attrition. Then, compare it with the difference beside the chart you see now.`,!!st.hint):''}${st.obs.q1!=null?fb(st.obs.q1===o1.ans,o1.why):''}
       ${st.obs.q1!=null?`<p style="margin-top:1rem"><strong>${o2.q}</strong></p>${optList('o2',o2.opts,st.obs.q2,null,st.obs.q2!=null,o2.ans)}${st.obs.q2!=null?fb(st.obs.q2===o2.ans,o2.why):''}`:''}
       </div>`;
     return h},
   log(){const P=PATHS[S.path],subs=DATA[S.path],st=S.lab;const lost=subs.filter(d=>d.dropped);
     const wrong=lost.filter(d=>st.sort[d.id]!==d.kind);const allRight=st.checked&&wrong.length===0;
-    let h=`<div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>Read the exclusion log</h2><p>Every lost ${P.subject} had a recorded reason. The reasons all sound routine. The question is whether each reason could depend on which group the ${P.subject} was in.</p></div></div>
-    <div class="charts">${chartCard(allRight?'What you actually observe, with the losses that could be related to treatment filled in':'What you actually observe',subs,{after:true,flag:allRight})}</div>
+    let h=`<div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>Read the exclusion notes</h2><p>Every lost ${P.subject} had a recorded reason. Here, we want to explore whether the exclusions could be related to the ${P.tx} or not. Sometimes it's possible for a ${P.tx} to have an unintended effect that may need to be taken into consideration for future studies.</p></div></div>
+    <div class="charts">${chartCard(allRight?'The real data with attrition, highlighting the dropouts that could be related to treatment':'The real data with attrition',subs,{after:true,flag:allRight})}</div>
     <p style="margin-top:1rem">For each entry, decide: is this loss <strong>unrelated to treatment</strong>, or <strong>could it be related to treatment</strong>?</p>
-    <div class="tbl card"><table><thead><tr><th>Group</th><th>Reason recorded</th><th><span class="th-help">${helpBtn('lab',`Unrelated to treatment: the reason would have happened whichever group the ${P.subject} was in, such as a failed surgery, contamination, or a protocol exclusion like an edge well. Losing these is like losing a random slice of the group.\n\nCould be related to treatment: the treatment itself could make the reason more likely, such as a death, a humane endpoint, or a QC failure that tracks how the ${P.subject} responded. Losing these removes a non-random slice of one group.`)}</span></th></tr></thead><tbody>${lost.map(d=>{const bad=st.checked&&st.sort[d.id]!==d.kind;return `<tr class="${bad?'needs-change':''}"><td><span class="pill ${d.arm}">${d.arm==='control'?P.arms[0]:P.arms[1]}</span></td><td class="txt">${J(d.reason)}</td><td><span class="seg"><button data-sort="${d.id}:benign" aria-pressed="${st.sort[d.id]==='benign'}" ${allRight?'disabled':''}>Unrelated</button><button data-sort="${d.id}:suspect" aria-pressed="${st.sort[d.id]==='suspect'}" ${allRight?'disabled':''}>Could be related</button></span></td></tr>`}).join('')}</tbody></table></div>`;
+    <div class="tbl card"><table><thead><tr><th>Group</th><th>Note</th><th><span class="th-help">${helpBtn('lab',`Unrelated to treatment: the dropout would have occurred no matter which group the sample or subject was in. This could include a failed surgery, contamination, or a protocol exclusion.\n\nCould be related to treatment: the treatment itself could be related to the loss. The loss isn't random as it primarily affects only the treatment group and shifts the result. Even if you're not planning to measure these data, these observations should be recorded elsewhere.`)}</span></th></tr></thead><tbody>${lost.map(d=>{const bad=st.checked&&st.sort[d.id]!==d.kind;return `<tr class="${bad?'needs-change':''}"><td><span class="pill ${d.arm}">${d.arm==='control'?P.arms[0]:P.arms[1]}</span></td><td class="txt">${J(d.reason)}</td><td><span class="seg"><button data-sort="${d.id}:benign" aria-pressed="${st.sort[d.id]==='benign'}" ${allRight?'disabled':''}>Unrelated</button><button data-sort="${d.id}:suspect" aria-pressed="${st.sort[d.id]==='suspect'}" ${allRight?'disabled':''}>Could be related</button></span></td></tr>`}).join('')}</tbody></table></div>`;
     const done=lost.every(d=>st.sort[d.id]);
-    if(!allRight){h+=`<div class="row" style="margin-top:1rem"><button class="btn" data-act="sort" ${done?'':'disabled'}>${st.checked?'Check again':'Check my calls'}</button>${done?'':'<span class="small muted">Make a call on every row.</span>'}</div>`;
-      if(st.checked)h+=`<div class="feedback bad" style="margin-top:1rem"><p style="margin:0"><strong>${wrong.length} ${wrong.length===1?'row needs':'rows need'} another look.</strong> The highlighted rows do not match our reading. Ask of each one: could the treatment itself make this reason more likely?</p></div>`}
+    if(!allRight){h+=`<div class="row" style="margin-top:1rem"><button class="btn" data-act="sort" ${done?'':'disabled'}>${st.checked?'Check again':'Check my answers'}</button>${done?'':'<span class="small muted">Make a decision on every row.</span>'}</div>`;
+      if(st.checked)h+=`<div class="feedback bad" style="margin-top:1rem"><p style="margin:0"><strong>${wrong.length} ${wrong.length===1?'row is':'rows are'} incorrect. Try again!</strong> Hint: ask yourself, could the ${P.tx} itself make this reason more likely?</p></div>`}
     else{const sus=lost.filter(d=>d.kind==='suspect');const susT=sus.filter(d=>d.arm==='treatment').length;
-      h+=`<div class="feedback good" style="margin-top:1rem"><p><strong>All ${lost.length} match our reading.</strong> ${J(P.twist)}</p><p style="margin:0">The filled orange dots on the chart are the losses that could be related to treatment. ${susT} of ${sus.length} are in the ${P.arms[1]} group, and they sit at the ${S.path==='cells'?'high':'low'} end of that group.</p></div>`}
+      h+=`<div class="feedback good" style="margin-top:1rem"><p><strong>All answers are correct!</strong> ${J(P.twist)}</p><p style="margin:0">${P.twistAfter.replace('{t}',susT).replace('{n}',sus.length)}</p></div>`}
     return h},
   classify(){const P=PATHS.humans,subs=DATA.mnar,st=S.human;const lost=subs.filter(d=>d.dropped);
     const wrong=lost.filter(d=>st.sort[d.id]!==d.kind);const allRight=st.checked&&wrong.length===0;
     const n=k=>lost.filter(d=>d.kind===k).length;
     let h=`
-    <div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>The data cannot tell you why someone left</h2><p>Ten participants are missing from the chart below. The numbers that remain look the same whatever the reason those ten had for leaving. But the reason decides what you can do about it.</p><p>Three kinds of reason, three different answers.</p></div></div>
-    <div class="charts">${chartCard(allRight?'What you actually observe, with the losses that could depend on the outcome filled in':'What you actually observe',subs,{after:true,flag:allRight})}</div>
-    <div class="card" style="margin:1rem 0"><table><thead><tr><th>Why they left</th><th>Name</th><th>What you can do</th></tr></thead><tbody>
-      <tr><td class="txt">For reasons unrelated to the study, such as moving away</td><td>${term('MCAR')}</td><td class="txt">Nothing to fix. Analyze the people who stayed.</td></tr>
-      <tr><td class="txt">For a reason you recorded, such as age or baseline severity</td><td>${term('MAR')}</td><td class="txt">Adjust for that variable.</td></tr>
-      <tr><td class="txt">For a reason you never recorded, such as side effects</td><td>${term('MNAR')}</td><td class="txt">No adjustment can fix it. Run a ${term('sens','sensitivity analysis')}.</td></tr>
+    <div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>The data alone can't tell you why someone left</h2><p>Ten participants dropped out and are shown on the chart below. The reason these participants left can influence how you handle the data.</p><p>Let's take a moment to identify different cases of missing data!</p></div></div>
+    <div class="charts">${chartCard(allRight?'The real data with attrition, highlighting the dropouts that could depend on specific outcomes':'The real data with attrition',subs,{after:true,flag:allRight})}</div>
+    <div class="card" style="margin:1rem 0"><table><thead><tr><th>Why they dropped out</th><th>Type</th><th>What you can do</th></tr></thead><tbody>
+      <tr><td class="txt">Dropped out for reasons unrelated to the study, such as moving away</td><td>${term('MCAR')}</td><td class="txt">Nothing to fix. Analyze the people who stayed.</td></tr>
+      <tr><td class="txt">Dropped out for a reason you recorded, such as age or baseline severity</td><td>${term('MAR')}</td><td class="txt">Adjust for that variable.</td></tr>
+      <tr><td class="txt">Dropped out for a reason you never recorded, such as unexpected side effects</td><td>${term('MNAR')}</td><td class="txt">No adjustment can fix it. Run a ${term('sens','sensitivity analysis')}.</td></tr>
     </tbody></table></div>
-    <p style="margin-top:1rem">Every participant who left has a short note in the trial file. Age was recorded at enrollment. For each one, decide which kind of dropout it is.</p>
-    <div class="tbl card"><table><thead><tr><th>Group</th><th>Age</th><th>Note in the file</th><th><span class="th-help">${helpBtn('hum',`MCAR: the reason has nothing to do with the trial, the drug, or how the person was doing.\n\nMAR: the reason is tied to something the trial recorded, such as age.\n\nMNAR: the reason is tied to something the trial never recorded, such as side effects, or no reason was recorded at all.`)}</span></th></tr></thead><tbody>${lost.map(d=>{const bad=st.checked&&st.sort[d.id]!==d.kind;return `<tr class="${bad?'needs-change':''}"><td><span class="pill ${d.arm}">${d.arm==='control'?P.arms[0]:P.arms[1]}</span></td><td class="stat">${d.age}</td><td class="txt">${J(d.reason)}</td><td><span class="seg">${['MCAR','MAR','MNAR'].map(k=>`<button data-sort="${d.id}:${k}" aria-pressed="${st.sort[d.id]===k}" ${allRight?'disabled':''}>${k}</button>`).join('')}</span></td></tr>`}).join('')}</tbody></table></div>`;
+    <p style="margin-top:1rem">Every participant who dropped out of the study has a note detailing the reason why. Age was recorded at enrollment. For each one, decide which kind of dropout it is. This will help you decide how to handle these data for analyses!</p>
+    <div class="tbl card"><table><thead><tr><th>Group</th><th>Age</th><th>Note</th><th><span class="th-help">${helpBtn('hum',`MCAR: the reason doesn't have to do with the trial, the drug, or how the person was doing.\n\nMAR: the reason is related to a variable that the trial recorded, such as age.\n\nMNAR: the reason is associated with something the trial never recorded or considered, such as an unexpected side effect, or no reason was recorded at all.`)}</span></th></tr></thead><tbody>${lost.map(d=>{const bad=st.checked&&st.sort[d.id]!==d.kind;return `<tr class="${bad?'needs-change':''}"><td><span class="pill ${d.arm}">${d.arm==='control'?P.arms[0]:P.arms[1]}</span></td><td class="stat">${d.age}</td><td class="txt">${J(d.reason)}</td><td><span class="seg">${['MCAR','MAR','MNAR'].map(k=>`<button data-sort="${d.id}:${k}" aria-pressed="${st.sort[d.id]===k}" ${allRight?'disabled':''}>${k}</button>`).join('')}</span></td></tr>`}).join('')}</tbody></table></div>`;
     const done=lost.every(d=>st.sort[d.id]);
-    if(!allRight){h+=`<div class="row" style="margin-top:1rem"><button class="btn" data-act="sort" ${done?'':'disabled'}>${st.checked?'Check again':'Check my calls'}</button>${done?'':'<span class="small muted">Make a call on every row.</span>'}</div>`;
-      if(st.checked)h+=`<div class="feedback bad" style="margin-top:1rem"><p style="margin:0"><strong>${wrong.length} ${wrong.length===1?'row needs':'rows need'} another look.</strong> The highlighted rows do not match our reading. Ask of each one: is the reason unrelated to the study, tied to something the trial recorded, or tied to something it never recorded?</p></div>`}
-    else{h+=`<div class="feedback good" style="margin-top:1rem"><p><strong>All ${lost.length} match our reading.</strong> ${n('MCAR')} left for reasons unrelated to the trial. ${n('MAR')} left because the monthly visits were too hard to reach, and they are the oldest participants, so age, which was recorded, explains that loss. ${n('MNAR')} left for reasons the trial never measured: side effects, or no reason at all.</p><p style="margin:0">The filled orange dots are the losses that could depend on the outcome, and they sit at the low end of the ${P.arms[1]} group. The age-related loss can be adjusted for. The unmeasured loss cannot, so this analysis needs a ${term('sens','sensitivity analysis')}: if the people who left had done as badly as is plausible, would the conclusion survive?</p></div>`}
+    if(!allRight){h+=`<div class="row" style="margin-top:1rem"><button class="btn" data-act="sort" ${done?'':'disabled'}>${st.checked?'Check again':'Check my answers'}</button>${done?'':'<span class="small muted">Make a decision on every row.</span>'}</div>`;
+      if(st.checked)h+=`<div class="feedback bad" style="margin-top:1rem"><p style="margin:0"><strong>${wrong.length} ${wrong.length===1?'row is':'rows are'} incorrect. Try again!</strong> Hint: ask yourself, is the reason unrelated to the study, tied to something the trial recorded, or something that was never recorded?</p></div>`}
+    else{h+=`<div class="feedback good" style="margin-top:1rem"><p><strong>All responses are correct!</strong> ${n('MCAR')} left for reasons unrelated to the trial. ${n('MAR')} left because the monthly visits were too hard to travel to, and they are the oldest participants, so age, which was recorded, may explain that loss and should be adjusted for in follow-up analyses. ${n('MNAR')} left for reasons the trial didn't measure or gave no reason at all.</p><p style="margin:0">Check out the graph: the filled orange dots are the losses that could depend on the treatment. A ${term('sens','sensitivity analysis')} is also needed for the participants who left for unrecorded reasons.</p></div>`}
     return h},
   questions(){const P=PATHS[S.path],subs=S.path==='humans'?DATA.mnar:DATA[S.path];const q=S.q;const M=MULTI[S.path],C=P.conclude;
     const picks=q.m||[];
-    let h=`<div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>Check your understanding</h2><p>Compare the two datasets with and without attrition. Click on a chart to enlarge both if needed.</p></div></div>
-    <div class="charts pair"><div class="zoomable" data-zoom="ideal" role="button" tabindex="0" aria-label="Enlarge both charts">${chartCard('The data without any attrition',subs,{after:false,stack:true,compact:true})}</div><div class="zoomable" data-zoom="obs" role="button" tabindex="0" aria-label="Enlarge both charts">${chartCard('What you actually observe',subs,{after:true,stack:true,compact:true})}</div></div>
+    let h=`<div class="instr" style="margin-bottom:1rem"><div class="inner"><h2>Check your understanding</h2><p>Compare the two datasets with and without attrition. Click on a chart to enlarge the chart if needed.</p></div></div>
+    <div class="charts pair"><div class="zoomable" data-zoom="ideal" role="button" tabindex="0" aria-label="Enlarge both charts">${chartCard('The data without any attrition',subs,{after:false,stack:true,compact:true})}</div><div class="zoomable" data-zoom="obs" role="button" tabindex="0" aria-label="Enlarge both charts">${chartCard('The real data with attrition',subs,{after:true,stack:true,compact:true})}</div></div>
     <div class="stack" style="margin-top:1.25rem">`;
     h+=`<div class="card"><h3>${C.q}</h3>${optList('qc',C.opts,q.c,null,q.c!=null,C.ans)}${q.c!=null?fb(q.c===C.ans,C.why):''}</div>`;
     if(q.c!=null){const found=M.opts.filter((o,i)=>o.ok&&picks.includes(i)).length,total=M.opts.filter(o=>o.ok).length;
@@ -586,15 +593,15 @@ const PAGES={
     const lost=subs.filter(d=>d.dropped).length,lostT=subs.filter(d=>d.dropped&&d.arm==='treatment').length;const grew=a.diff>b.diff;
     const fmt=v=>(v>=0?'+':'')+v.toFixed(1);
     return `
-    <div class="takeaway"><h3>Takeaway: Random loss is mostly harmless. Loss tied to treatment or outcome is not.</h3><div class="body"><p style="margin:0">The question to ask of any study with attrition is not how many were lost, but whether the ones lost differ from the ones kept.</p></div></div>
+    <div class="takeaway"><h3>Takeaway: Dropouts will occur no matter how well you design your study.</h3><div class="body"><p style="margin:0">It's your job to understand how to handle these missing data so that your results reflect the data you collected. Understanding how to best prevent these dropouts can aid in reducing dropout rates.</p></div></div>
     <h3 class="tk-h">What you saw</h3>
     <p style="margin:0 0 .75rem">${lost} of ${subs.length} ${P.unit} dropped out, ${lostT} of them from the ${P.arms[1]} group. Here is what that did to the difference between the two group means.</p>
-    <div class="stat-strip"><div class="stat"><div class="lbl">If no one had dropped out</div><div class="num">${fmt(b.diff)}</div><div class="sub">${P.arms[1]} ${b.mt.toFixed(1)} vs. ${P.arms[0]} ${b.mc.toFixed(1)}</div></div><div class="stat-arrow"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg><span>${grew?'increased':'decreased'}</span></div><div class="stat"><div class="lbl">After attrition (what you observed)</div><div class="num">${fmt(a.diff)}</div><div class="sub">${P.arms[1]} ${a.mt.toFixed(1)} vs. ${P.arms[0]} ${a.mc.toFixed(1)}</div></div></div>
-    <p class="small muted" style="margin:.5rem 0 0">Same study, same ${P.unit}. The only thing that changed is who was left to measure, and nothing in the final figure said so.</p>
+    <div class="stat-strip"><div class="stat"><div class="lbl">If all ${P.pop} were included</div><div class="num">${fmt(b.diff)}</div><div class="sub">${P.arms[1]} ${b.mt.toFixed(1)} vs. ${P.arms[0]} ${b.mc.toFixed(1)}</div></div><div class="stat-arrow"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg><span>${grew?'increased':'decreased'}</span></div><div class="stat"><div class="lbl">After attrition (what you observed)</div><div class="num">${fmt(a.diff)}</div><div class="sub">${P.arms[1]} ${a.mt.toFixed(1)} vs. ${P.arms[0]} ${a.mc.toFixed(1)}</div></div></div>
+    <p class="small muted" style="margin:.5rem 0 0">From the same study you can get differing results depending on attrition. Noting and flagging the data that drop out can help you understand your data more deeply. If some of the attrition seems to be due to treatment then you now have the rationale to follow up on these results and establish the parameters and methods to measure them.</p>
     <h3 class="tk-h">What went wrong</h3>
-    <div class="tk-grid">${P.lessons.map(t=>`<div class="tk-card lesson"><p>${t}</p></div>`).join('')}</div>
+    <div class="tk-grid">${P.lessons.map(t=>`<div class="tk-card lesson">${Array.isArray(t)?`<ul>${t.map(x=>`<li>${x}</li>`).join('')}</ul>`:`<p>${t}</p>`}</div>`).join('')}</div>
     <h3 class="tk-h">How to prevent it</h3>
-    <div class="tk-grid">${P.prevent.map((x,i)=>`<div class="tk-card"><span class="badge" aria-hidden="true">${i+1}</span><h4>${x.t}</h4><p>${x.d}</p></div>`).join('')}</div>`},
+    <div class="tk-grid">${P.prevent.map((x,i)=>`<div class="tk-card"><span class="badge" aria-hidden="true">${i+1}</span><h4>${x.t}</h4>${x.d?`<p>${x.d}</p>`:''}</div>`).join('')}</div>`},
 };
 
 /* ---------- render ---------- */
@@ -607,18 +614,18 @@ function canContinue(){const k=stepList()[S.step].k;
   if(k==='questions'){if(S.q.c==null)return false;const M=MULTI[S.path];return M.opts.every((o,i)=>!o.ok||(S.q.m||[]).includes(i))}
   return k!=='congrats'}
 function hintFor(){const k=stepList()[S.step].k;
-  if(k==='choose'&&!S.path)return 'Pick a subject type to continue.';
+  if(k==='choose'&&!S.path)return 'Pick a research scenario to continue.';
   if(k==='ideal'&&!canContinue())return 'Answer both questions about the ideal result to continue.';
-  if(k==='attrition'&&!canContinue())return 'Answer both questions about the observed result.';
-  if(k==='log'&&!canContinue())return 'Sort every row and check your calls. All rows must match to continue.';
-  if(k==='classify'&&!canContinue())return 'Classify every participant who left and check your calls. All rows must match to continue.';
+  if(k==='attrition'&&!canContinue())return 'Answer both questions about the actual observed result.';
+  if(k==='log'&&!canContinue())return 'Sort every row and check your answers. All rows must be sorted correctly to continue.';
+  if(k==='classify'&&!canContinue())return 'Classify every participant who left and check your answers. All rows must be sorted correctly to continue.';
   if(k==='questions'&&!canContinue())return S.q.c!=null?'Find every option that protects against attrition bias to continue.':'Answer the first question to continue.';
   return ''}
 function renderZoom(){let z=document.getElementById('zoom');if(!S.zoom){if(z)z.remove();return}
   const subs=S.path==='humans'?DATA.mnar:DATA[S.path];
   if(!z){z=document.createElement('div');z.id='zoom';document.body.appendChild(z)}
   z.innerHTML=`<div class="zoom-overlay" data-zoomclose="1" role="dialog" aria-modal="true" aria-label="Enlarged charts"><div class="zoom-box"><div class="zoom-bar"><span></span><button class="zoom-close" data-act="closezoom" aria-label="Close"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button></div>
-    <div class="charts">${chartCard('The data without any attrition',subs,{after:false})}${chartCard('What you actually observe',subs,{after:true})}</div></div></div>`}
+    <div class="charts">${chartCard('The data without any attrition',subs,{after:false})}${chartCard('The real data with attrition',subs,{after:true})}</div></div></div>`}
 function render(){const list=stepList();S.step=Math.min(S.step,list.length-1);const k=list[S.step].k;
   const untracked=k==='intro'||k==='congrats';
   const tracked=list.filter(s=>s.k!=='intro'&&s.k!=='congrats');
